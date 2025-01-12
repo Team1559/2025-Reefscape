@@ -29,8 +29,9 @@ public class SdsMk4Module implements SwerveModuleIo {
         }
     }
 
+    // TODO: make WHEEL_RADIUS a parameter
     public static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
-    public static final double STEER_GEAR_RATIO = (60 / 10 * 32 / 15);
+    public static final double STEER_GEAR_RATIO = (60d / 10 * 32 / 15);
 
     private final GearRatio driveGearRatio;
     private final TalonFX steerMotor;
