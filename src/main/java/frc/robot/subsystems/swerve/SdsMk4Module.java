@@ -92,7 +92,7 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public double getDistanceTraveled() {
-        return driveMotor.getVelocity().getValueAsDouble() * (2 * WHEEL_RADIUS * Math.PI);
+        return driveMotor.getPosition().getValueAsDouble() / driveGearRatio.value * (2 * WHEEL_RADIUS * Math.PI);
     }
 
     @Override
