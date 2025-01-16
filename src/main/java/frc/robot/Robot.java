@@ -6,6 +6,12 @@ package frc.robot;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -23,8 +29,9 @@ import frc.robot.commands.drive.TeleopDriveCommand;
 import frc.robot.subsystems.swerve.SdsMk4Module;
 import frc.robot.subsystems.swerve.SwerveDrive;
 import frc.robot.subsystems.swerve.SwerveModuleIo;
+import frc.robot.subsystems.swerve.SdsMk4Module.GearRatio;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
     private final CommandXboxController pilotController;
     private final SwerveDrive swerveDrive;
     private final String canivoreBusName = "1559Canivore";
@@ -33,6 +40,10 @@ public class Robot extends TimedRobot {
     public Robot() {
         pilotController = new CommandXboxController(0);
         swerveDrive = createSwerveDrive();
+        Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new NT4Publisher());
+        Logger.start();
+        Logger.recordOutput("hi/test", ":)"); //Leave as easter egg
         // coPilotController = new CommandXboxController(1);
     }
 
@@ -84,38 +95,34 @@ public class Robot extends TimedRobot {
     public SwerveDrive createSwerveDrive() {
         double swerveModuleX = Units.inchesToMeters(12);
         double swerveModuleY = Units.inchesToMeters(12);
-        SwerveModuleIo swerveFL = createSwerveModule(1, 0, 2, Rotation2d.fromRotations(-0.40087890625),
+        SwerveModuleIo frontLeft = createSwerveModule(1, 0, 2, Rotation2d.fromRadians(-1.88),
                 new Translation2d(swerveModuleX, swerveModuleY));
-        SwerveModuleIo swerveFR = createSwerveModule(4, 3, 5, Rotation2d.fromRotations(0.052001953125),
+        SwerveModuleIo frontRight = createSwerveModule(4, 3, 5, Rotation2d.fromRadians(-1.43),
                 new Translation2d(swerveModuleX, -swerveModuleY));
-        SwerveModuleIo swerveRL = createSwerveModule(10, 9, 11, Rotation2d.fromRotations(-0.444091796875),
+        SwerveModuleIo rearLeft = createSwerveModule(10, 9, 11, Rotation2d.fromRadians(-1.5),
                 new Translation2d(-swerveModuleX, swerveModuleY));
-        SwerveModuleIo swerveRR = createSwerveModule(7, 6, 8, Rotation2d.fromRotations(-0.240234375),
+        SwerveModuleIo rearRight = createSwerveModule(7, 6, 8, Rotation2d.fromRadians(-0.01),
                 new Translation2d(-swerveModuleX, -swerveModuleY));
-
 
         // TODO: make gyro class, log stuff, etc
         Pigeon2 gyro = new Pigeon2(12, canivoreBusName);
         Supplier<Rotation2d> yaw = () -> Rotation2d.fromDegrees(gyro.getYaw(false).getValueAsDouble());
-        return new SwerveDrive(yaw, swerveFR, swerveFL, swerveRR, swerveRL);
+        return new SwerveDrive(yaw, frontLeft, frontRight, rearLeft, rearRight);
     }
 
     public SwerveModuleIo createSwerveModule(int steerMotorId, int driveMotorId, int canCoderId,
             Rotation2d canCoderOffset, Translation2d locationOffset) {
-
+                
+        CANcoder canCoder = new CANcoder(canCoderId, canivoreBusName);
         TalonFX steerMotor = new TalonFX(steerMotorId, canivoreBusName);
-        Slot0Configs steerMotorPid = new Slot0Configs().withKP(5);
-
         TalonFX driveMotor = new TalonFX(driveMotorId, canivoreBusName);
-
+        
+        Slot0Configs steerMotorPid = new Slot0Configs().withKP(60);
         Slot0Configs driveMotorPid = new Slot0Configs().withKV(12 / (6380.0 / 60)); // TODO: add the kd
 
-        CANcoder canCoder = new CANcoder(canCoderId, canivoreBusName);
-
+        
         driveMotor.setPosition(0);
-        steerMotor.setPosition(canCoder.getAbsolutePosition().getValueAsDouble()*12.8 - canCoderOffset.getRotations()*12.8);
-        System.out.println(canCoderId + ": " + canCoder.getAbsolutePosition().getValueAsDouble());
-        return new SdsMk4Module(steerMotor, driveMotor, canCoder, SdsMk4Module.GearRatio.L2, canCoderOffset,
-                locationOffset, steerMotorPid, driveMotorPid);
+                
+        return new SdsMk4Module(locationOffset, steerMotor, steerMotorPid, driveMotor, driveMotorPid, GearRatio.L2, canCoder, canCoderOffset);
     }
 }

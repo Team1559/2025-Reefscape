@@ -2,6 +2,8 @@ package frc.robot.subsystems.swerve;
 
 import java.util.function.Supplier;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,6 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SwerveDrive extends SubsystemBase {
@@ -40,19 +43,22 @@ public class SwerveDrive extends SubsystemBase {
     @Override
     public void periodic(){
         for (int i = 0; i < modules.length; i++) {
-            System.out.println(i + ": " + modules[i].getAngle());
+            // System.out.println(i + ": " + modules[i].getAngle());
+            Logger.recordOutput("swerve/modules/"+i+"/angle", modules[i].getAngle());
         }
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
-        Pose2d position = getPosition(); // hey doesn't have to be a variable :) ok thanks pookie
-        driveRobotOriented(ChassisSpeeds.fromRobotRelativeSpeeds(speeds, position.getRotation()));
+        driveRobotOriented(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPosition().getRotation()));
     }
 
     public void driveRobotOriented(ChassisSpeeds speeds) {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         for (int i = 0; i < modules.length; i++) {
             // states[i].optimize(modules[i].getAngle());
+            // System.out.println(i + ": " + states[i].angle + " " + modules[i].getAngle());
+            Logger.recordOutput("swerve/modules/"+i+"/setpoint", states[i].angle);
+            // Logger.recordOutput("swerve/modules/" + i + "/diff", null);
             modules[i].setState(states[i]);
         }
     }

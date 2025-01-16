@@ -34,7 +34,7 @@ public class TeleopDriveCommand extends Command {
     @Override
     public void execute() {
         double x = xSupplier.getAsDouble();
-        double y = 0;//ySupplier.getAsDouble();
+        double y = .7;//ySupplier.getAsDouble();
         double rotation = rSupplier.getAsDouble();
         
         double magnitude = Math.hypot(x, y);

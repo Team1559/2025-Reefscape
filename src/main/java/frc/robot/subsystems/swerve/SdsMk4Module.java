@@ -1,5 +1,8 @@
 package frc.robot.subsystems.swerve;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -31,7 +34,6 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     // TODO: make WHEEL_RADIUS a parameter
     public static final double WHEEL_RADIUS = Units.inchesToMeters(2.0);
-    public static final double STEER_GEAR_RATIO = (60d / 10 * 32 / 15);
 
     private final GearRatio driveGearRatio;
     private final TalonFX steerMotor;
@@ -40,8 +42,9 @@ public class SdsMk4Module implements SwerveModuleIo {
     private final Rotation2d cancoderOffset;
     private final Translation2d location;
 
-    public SdsMk4Module(TalonFX steerMotor, TalonFX driveMotor, CANcoder cancoder, GearRatio driveGearRatio,
-            Rotation2d cancoderOffset, Translation2d location, Slot0Configs steerMotorPid, Slot0Configs driveMotorPid) {
+    public SdsMk4Module(Translation2d location, TalonFX steerMotor, Slot0Configs steerMotorPid, TalonFX driveMotor,
+            Slot0Configs driveMotorPid, GearRatio driveGearRatio, CANcoder cancoder,
+            Rotation2d cancoderOffset) {
         this.steerMotor = steerMotor;
         this.driveMotor = driveMotor;
         this.cancoder = cancoder;
@@ -54,12 +57,18 @@ public class SdsMk4Module implements SwerveModuleIo {
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withInverted(InvertedValue.CounterClockwise_Positive));
         steerMotor.getConfigurator().apply(steerMotorPid);
+        steerMotor.getConfigurator().apply(new FeedbackConfigs().withRemoteCANcoder(cancoder));
+        ClosedLoopGeneralConfigs clgConfig = new ClosedLoopGeneralConfigs();
+        clgConfig.ContinuousWrap = true;
+        steerMotor.getConfigurator().apply(clgConfig);
 
         driveMotor.getConfigurator().apply(new TalonFXConfiguration());
         driveMotor.getConfigurator().apply(new MotorOutputConfigs()
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withInverted(InvertedValue.Clockwise_Positive));
         driveMotor.getConfigurator().apply(driveMotorPid);
+
+        cancoder.getConfigurator().apply(new CANcoderConfiguration());
     }
 
     @Override
@@ -71,7 +80,7 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public void setAngle(Rotation2d angle) {
-        PositionVoltage control = new PositionVoltage(angle.getRotations() * STEER_GEAR_RATIO);
+        PositionVoltage control = new PositionVoltage(angle.plus(cancoderOffset).getRotations());
         steerMotor.setControl(control);
     }
 
