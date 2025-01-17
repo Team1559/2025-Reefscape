@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.lib.subsystems.swerve;
 
 import java.util.function.Supplier;
 
@@ -16,10 +16,9 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class SwerveDrive extends SubsystemBase {
+public class SwerveDrive extends SubsystemBase{
     private final SwerveModuleIo[] modules;
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
@@ -40,11 +39,11 @@ public class SwerveDrive extends SubsystemBase {
         this.estimator = new SwerveDrivePoseEstimator(kinematics, heading.get(), positions, new Pose2d());
     }
 
-    @Override
-    public void periodic(){
+    public void log(){
         for (int i = 0; i < modules.length; i++) {
             // System.out.println(i + ": " + modules[i].getAngle());
             Logger.recordOutput("swerve/modules/"+i+"/angle", modules[i].getAngle());
+            // Logger.recordOutput("swerve/states", modules[i]);
         }
     }
 
@@ -55,7 +54,7 @@ public class SwerveDrive extends SubsystemBase {
     public void driveRobotOriented(ChassisSpeeds speeds) {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         for (int i = 0; i < modules.length; i++) {
-            // states[i].optimize(modules[i].getAngle());
+            states[i].optimize(modules[i].getAngle());
             // System.out.println(i + ": " + states[i].angle + " " + modules[i].getAngle());
             Logger.recordOutput("swerve/modules/"+i+"/setpoint", states[i].angle);
             // Logger.recordOutput("swerve/modules/" + i + "/diff", null);

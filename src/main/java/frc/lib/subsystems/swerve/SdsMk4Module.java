@@ -1,4 +1,4 @@
-package frc.robot.subsystems.swerve;
+package frc.lib.subsystems.swerve;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;

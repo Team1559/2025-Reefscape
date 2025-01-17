@@ -1,10 +1,10 @@
-package frc.robot.commands.drive;
+package frc.lib.subsystems.swerve;
 
 import java.util.function.DoubleSupplier;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.swerve.SwerveDrive;
 
 public class TeleopDriveCommand extends Command {
     private final DoubleSupplier xSupplier;
@@ -16,7 +16,7 @@ public class TeleopDriveCommand extends Command {
 
     private final SwerveDrive swerveDrive;
 
-    private static final double DEADBAND = .02;
+    private static final double DEADBAND = .05;
 
     public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier,
             double maxLinearVelocity, double maxRotationalVelocity, SwerveDrive swerveDrive) {
@@ -34,9 +34,9 @@ public class TeleopDriveCommand extends Command {
     @Override
     public void execute() {
         double x = xSupplier.getAsDouble();
-        double y = .7;//ySupplier.getAsDouble();
+        double y = ySupplier.getAsDouble();
         double rotation = rSupplier.getAsDouble();
-        
+
         double magnitude = Math.hypot(x, y);
 
         if (magnitude > 1) {
@@ -45,12 +45,14 @@ public class TeleopDriveCommand extends Command {
         } else if (magnitude < DEADBAND) {
             x = 0;
             y = 0;
+        } else {
+            double deadbandMagnitude = MathUtil.applyDeadband(magnitude, DEADBAND);
+            x *= deadbandMagnitude/magnitude;
+            y *= deadbandMagnitude/magnitude;
         }
-        
-        if (Math.abs(rotation) < DEADBAND) {
-            rotation = 0;
-        }
-        
+
+        rotation = MathUtil.applyDeadband(rotation, DEADBAND);
+
         x *= maxLinearVelocity;
         y *= maxLinearVelocity;
         rotation *= maxRotationalVelocity;
