@@ -20,9 +20,10 @@ public class Drivetrain extends SwerveDrive {
 
     public Drivetrain() {
         super(rotationSupplierSupplier(), moduleSupplier());
+        setName("swerveDrive");
     }
 
-    private static SwerveModuleIo createSwerveModule(int steerMotorId, int driveMotorId, int canCoderId,
+    private static SwerveModuleIo createSwerveModule(String name, int steerMotorId, int driveMotorId, int canCoderId,
             Rotation2d canCoderOffset, Translation2d locationOffset) {
 
         CANcoder canCoder = new CANcoder(canCoderId, canivoreBusName);
@@ -32,9 +33,7 @@ public class Drivetrain extends SwerveDrive {
         Slot0Configs steerMotorPid = new Slot0Configs().withKP(60);
         Slot0Configs driveMotorPid = new Slot0Configs().withKV(12 / (6380.0 / 60)); // TODO: add the kd
 
-        driveMotor.setPosition(0);
-
-        return new SdsMk4Module(locationOffset, steerMotor, steerMotorPid, driveMotor, driveMotorPid,
+        return new SdsMk4Module(name, locationOffset, steerMotor, steerMotorPid, driveMotor, driveMotorPid,
                 GearRatio.L2, canCoder, canCoderOffset);
     }
 
@@ -46,13 +45,13 @@ public class Drivetrain extends SwerveDrive {
     private static SwerveModuleIo[] moduleSupplier() {
         double swerveModuleX = Units.inchesToMeters(12);
         double swerveModuleY = Units.inchesToMeters(12);
-        SwerveModuleIo frontLeft = createSwerveModule(1, 0, 2, Rotation2d.fromRadians(-1.88),
+        SwerveModuleIo frontLeft = createSwerveModule("frontLeft", 1, 0, 2, Rotation2d.fromRadians(-1.88),
                 new Translation2d(swerveModuleX, swerveModuleY));
-        SwerveModuleIo frontRight = createSwerveModule(4, 3, 5, Rotation2d.fromRadians(-1.43),
+        SwerveModuleIo frontRight = createSwerveModule("frontRight", 4, 3, 5, Rotation2d.fromRadians(-1.43),
                 new Translation2d(swerveModuleX, -swerveModuleY));
-        SwerveModuleIo rearLeft = createSwerveModule(10, 9, 11, Rotation2d.fromRadians(-1.5),
+        SwerveModuleIo rearLeft = createSwerveModule("rearLeft", 10, 9, 11, Rotation2d.fromRadians(-1.5),
                 new Translation2d(-swerveModuleX, swerveModuleY));
-        SwerveModuleIo rearRight = createSwerveModule(7, 6, 8, Rotation2d.fromRadians(-0.01),
+        SwerveModuleIo rearRight = createSwerveModule("rearRight", 7, 6, 8, Rotation2d.fromRadians(-0.01),
                 new Translation2d(-swerveModuleX, -swerveModuleY));
         return new SwerveModuleIo[] { frontLeft, frontRight, rearLeft, rearRight };
     }

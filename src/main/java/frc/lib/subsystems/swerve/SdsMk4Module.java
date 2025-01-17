@@ -15,6 +15,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 
 public class SdsMk4Module implements SwerveModuleIo {
@@ -41,10 +42,15 @@ public class SdsMk4Module implements SwerveModuleIo {
     private final CANcoder cancoder;
     private final Rotation2d cancoderOffset;
     private final Translation2d location;
+    private final String name;
+    private double setSpeed;
+    private Rotation2d setAngle;
 
-    public SdsMk4Module(Translation2d location, TalonFX steerMotor, Slot0Configs steerMotorPid, TalonFX driveMotor,
+    public SdsMk4Module(String name, Translation2d location, TalonFX steerMotor, Slot0Configs steerMotorPid,
+            TalonFX driveMotor,
             Slot0Configs driveMotorPid, GearRatio driveGearRatio, CANcoder cancoder,
             Rotation2d cancoderOffset) {
+        this.name = name;
         this.steerMotor = steerMotor;
         this.driveMotor = driveMotor;
         this.cancoder = cancoder;
@@ -67,12 +73,14 @@ public class SdsMk4Module implements SwerveModuleIo {
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withInverted(InvertedValue.Clockwise_Positive));
         driveMotor.getConfigurator().apply(driveMotorPid);
+        driveMotor.setPosition(0);
 
         cancoder.getConfigurator().apply(new CANcoderConfiguration());
     }
 
     @Override
     public void setSpeed(double speed) {
+        this.setSpeed = speed;
         VelocityVoltage control = new VelocityVoltage(
                 speed * (1 / (2 * WHEEL_RADIUS * Math.PI)) * driveGearRatio.value);
         driveMotor.setControl(control);
@@ -80,6 +88,7 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public void setAngle(Rotation2d angle) {
+        this.setAngle = angle;
         PositionVoltage control = new PositionVoltage(angle.plus(cancoderOffset).getRotations());
         steerMotor.setControl(control);
     }
@@ -125,12 +134,13 @@ public class SdsMk4Module implements SwerveModuleIo {
     }
 
     @Override
-    public double getSteerMotorVelocity() {
-        return steerMotor.getVelocity().getValueAsDouble();
+    public String getName() {
+        return name;
     }
 
     @Override
-    public double getDriveMotorVelocity() {
-        return driveMotor.getVelocity().getValueAsDouble();
+    public SwerveModuleState getSetpoint() {
+        return new SwerveModuleState(setSpeed, setAngle);
     }
+
 }

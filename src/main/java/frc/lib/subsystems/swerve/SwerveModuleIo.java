@@ -58,15 +58,24 @@ public interface SwerveModuleIo {
  */
     double getDriveMotorCurrent();
 /**
- * The speed of the steer motor 
- * @return The speed of the steer motor in rotations per second 
+ * returns the name of the module
+ * @return returns the name of the module
  */
-    double getSteerMotorVelocity();
+    String getName();
 /**
- * The speed of the drive motor 
- * @return The speed of the drive motor in rotations per second 
+ * 
+ * @return gets the setpoint, with both speed and angle
  */
-    double getDriveMotorVelocity();
+    SwerveModuleState getSetpoint();
+
+/**
+ * 
+ * @return gets the current state, with speed and angle
+ */
+    default SwerveModuleState getCurrentState(){
+        return new SwerveModuleState(getSpeed(), getAngle());
+    }
+
     /**
      * it returns the swerve module
      * @return
