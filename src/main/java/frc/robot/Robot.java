@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Percent;
+import static edu.wpi.first.units.Units.Second;
+import static edu.wpi.first.units.Units.Seconds;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -11,6 +15,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
@@ -44,7 +49,7 @@ public class Robot extends LoggedRobot {
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
-        led = new Led(0, 135);
+        led = new Led(0, 144);
     }
 
     @Override
@@ -62,7 +67,8 @@ public class Robot extends LoggedRobot {
     @Override
     public void disabledInit() {
         CommandScheduler.getInstance().cancelAll();
-        led.setColor(Color.kBlue);
+        LEDPattern pattern = LEDPattern.solid(Color.kRed).breathe(Seconds.of(2));
+        led.setPattern(pattern);
     }
 
     @Override
@@ -72,7 +78,9 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-        led.setColor(Color.kRed);
+        LEDPattern rainbow = LEDPattern.rainbow(255, 250);
+        LEDPattern pattern = rainbow.scrollAtRelativeSpeed(Percent.per(Second).of(50));
+        led.setPattern(pattern);
     }
 
     @Override
