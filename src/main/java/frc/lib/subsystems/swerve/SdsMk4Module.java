@@ -1,5 +1,6 @@
 package frc.lib.subsystems.swerve;
 
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -17,15 +18,19 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
 
 public class SdsMk4Module implements SwerveModuleIo {
 
     public enum ModuleType {
-        MK4_L1(50d / 14 * 19 / 25 * 45 / 15,InvertedValue.CounterClockwise_Positive),
+        MK4_L1(50d / 14 * 19 / 25 * 45 / 15, InvertedValue.CounterClockwise_Positive),
         MK4_L2(50d / 14 * 17 / 27 * 45 / 15, InvertedValue.CounterClockwise_Positive),
         MK4_L3(50d / 14 * 16 / 28 * 45 / 15, InvertedValue.CounterClockwise_Positive),
         MK4_L4(48d / 16 * 16 / 28 * 45 / 15, InvertedValue.CounterClockwise_Positive),
- 
+
         MK4i_L1(-50d / 14 * 19 / 25 * 45 / 15, InvertedValue.Clockwise_Positive),
         MK4i_L2(-50d / 14 * 17 / 27 * 45 / 15, InvertedValue.Clockwise_Positive),
         MK4i_L3(-50d / 14 * 16 / 28 * 45 / 15, InvertedValue.Clockwise_Positive);
@@ -51,8 +56,16 @@ public class SdsMk4Module implements SwerveModuleIo {
     private final String name;
     private double setSpeed;
     private Rotation2d setAngle;
+    private final StatusSignal<AngularVelocity> driveMotorVelocity;
+    private final StatusSignal<Angle> canCoderAbsolutePosition;
+    private final StatusSignal<Angle> driveMotorPosition;
+    private final StatusSignal<Temperature> steerMotorTemperature;
+    private final StatusSignal<Temperature> driveMotorTemperature;
+    private final StatusSignal<Current> steerMotorCurrent;
+    private final StatusSignal<Current> driveMotorCurrent;
 
-    public SdsMk4Module(String name, Translation2d location,  ModuleType moduleType,TalonFX steerMotor, Slot0Configs steerMotorPid,
+    public SdsMk4Module(String name, Translation2d location, ModuleType moduleType, TalonFX steerMotor,
+            Slot0Configs steerMotorPid,
             TalonFX driveMotor,
             Slot0Configs driveMotorPid, CANcoder cancoder,
             Rotation2d cancoderOffset) {
@@ -82,6 +95,22 @@ public class SdsMk4Module implements SwerveModuleIo {
         driveMotor.setPosition(0);
 
         cancoder.getConfigurator().apply(new CANcoderConfiguration());
+
+        driveMotorVelocity = driveMotor.getVelocity();
+        canCoderAbsolutePosition = cancoder.getAbsolutePosition();
+        driveMotorPosition = driveMotor.getPosition();
+        driveMotorTemperature = driveMotor.getDeviceTemp();
+        steerMotorTemperature = steerMotor.getDeviceTemp();
+        driveMotorCurrent = driveMotor.getStatorCurrent();
+        steerMotorCurrent = steerMotor.getStatorCurrent();
+
+        driveMotorVelocity.setUpdateFrequency(50);
+        canCoderAbsolutePosition.setUpdateFrequency(100);
+        driveMotorPosition.setUpdateFrequency(100);
+        driveMotorTemperature.setUpdateFrequency(5);
+        steerMotorTemperature.setUpdateFrequency(5);
+        driveMotorCurrent.setUpdateFrequency(10);
+        steerMotorCurrent.setUpdateFrequency(10);
     }
 
     @Override
@@ -106,37 +135,37 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public double getSpeed() {
-        return driveMotor.getVelocity().getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
+        return driveMotorVelocity.getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
     }
 
     @Override
     public Rotation2d getAngle() {
-        return Rotation2d.fromRotations(cancoder.getAbsolutePosition().getValueAsDouble()).minus(cancoderOffset);
+        return Rotation2d.fromRotations(canCoderAbsolutePosition.getValueAsDouble()).minus(cancoderOffset);
     }
 
     @Override
     public double getDistanceTraveled() {
-        return driveMotor.getPosition().getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
+        return driveMotorPosition.getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
     }
 
     @Override
     public double getSteerMotorTemperature() {
-        return steerMotor.getDeviceTemp().getValueAsDouble();
+        return steerMotorTemperature.getValueAsDouble();
     }
 
     @Override
     public double getDriveMotorTemperature() {
-        return driveMotor.getDeviceTemp().getValueAsDouble();
+        return driveMotorTemperature.getValueAsDouble();
     }
 
     @Override
     public double getSteerMotorCurrent() {
-        return steerMotor.getStatorCurrent().getValueAsDouble();
+        return steerMotorCurrent.getValueAsDouble();
     }
 
     @Override
     public double getDriveMotorCurrent() {
-        return driveMotor.getStatorCurrent().getValueAsDouble();
+        return driveMotorCurrent.getValueAsDouble();
     }
 
     @Override
