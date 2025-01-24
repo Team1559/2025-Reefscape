@@ -17,8 +17,9 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.subsystems.vision.VisionConsumer;
 
-public class SwerveDrive extends SubsystemBase {
+public class SwerveDrive extends SubsystemBase implements VisionConsumer {
     private final SwerveModuleIo[] modules;
     private final SwerveDriveKinematics kinematics;
     private final SwerveDriveOdometry odometry;
