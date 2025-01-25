@@ -13,6 +13,9 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -47,11 +50,18 @@ public class Robot extends LoggedRobot {
         // coPilotController = new CommandXboxController(1);
         
         drivetrain = new Drivetrain();
-        led = new Leds(0, 144);
         drivetrain.configureAuto(23.2, 8);
+
+        led = new Leds(0, 144);
         
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
+        SmartDashboard.putBoolean("test", true);
+        NetworkTableInstance instance = NetworkTableInstance.getDefault();
+        // instance.getBooleanTopic("test").subscribe(true, null).get();
+        if(instance.getBooleanTopic("test").subscribe(false,PubSubOption.hidden(false)).get())
+        led.setColor(Color.kWhite);
+        else led.setColor(Color.kRed);
     }
 
     @Override
@@ -70,7 +80,7 @@ public class Robot extends LoggedRobot {
     public void disabledInit() {
         CommandScheduler.getInstance().cancelAll();
         LEDPattern pattern = LEDPattern.solid(Color.kRed).breathe(Seconds.of(2));
-        led.setPattern(pattern);
+        // led.setPattern(pattern);
     }
 
     @Override
