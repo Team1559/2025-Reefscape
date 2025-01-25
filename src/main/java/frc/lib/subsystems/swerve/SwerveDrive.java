@@ -50,7 +50,6 @@ public class SwerveDrive extends SubsystemBase {
         this.odometry = new SwerveDriveOdometry(kinematics, heading.get(), positions);
         this.estimator = new SwerveDrivePoseEstimator(kinematics, heading.get(), positions, new Pose2d());
         // TODO: make constants
-
     }
 
     public void configureAuto(double massKg, double Moi) {

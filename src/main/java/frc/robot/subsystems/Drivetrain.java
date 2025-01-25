@@ -16,7 +16,7 @@ import frc.lib.subsystems.swerve.SwerveModuleIo;
 import frc.lib.subsystems.swerve.SdsMk4Module.ModuleType;
 
 public class Drivetrain extends SwerveDrive {
-        private static final String canivoreBusName = "swerve_drive";
+        private static final String canivoreBusName = "1559_Canivore";
 
         public Drivetrain() {
                 super(rotationSupplierSupplier(), moduleSupplier());

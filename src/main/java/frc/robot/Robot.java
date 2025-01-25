@@ -33,15 +33,16 @@ public class Robot extends LoggedRobot {
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
         
-        autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData(autoChooser);
         
-
+        
         pilotController = new CommandXboxController(0);
         // coPilotController = new CommandXboxController(1);
-
+        
         drivetrain = new Drivetrain();
-
+        drivetrain.configureAuto(23.2, 8);
+        
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData(autoChooser);
     }
 
     @Override
@@ -63,6 +64,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
+        CommandScheduler.getInstance().schedule(autoChooser.getSelected());
     }
 
     @Override
