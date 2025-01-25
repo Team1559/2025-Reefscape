@@ -15,6 +15,11 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.wpilibj.LEDPattern;
 import edu.wpi.first.wpilibj.util.Color;
+import com.pathplanner.lib.auto.AutoBuilder;
+
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.Leds;
@@ -22,6 +27,8 @@ import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
 
 public class Robot extends LoggedRobot {
+
+    private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
     // private final CommandXboxController coPilotController;
 
@@ -33,12 +40,18 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
-
+        
+        
+        
         pilotController = new CommandXboxController(0);
         // coPilotController = new CommandXboxController(1);
-
+        
         drivetrain = new Drivetrain();
         led = new Leds(0, 144);
+        drivetrain.configureAuto(23.2, 8);
+        
+        autoChooser = AutoBuilder.buildAutoChooser();
+        SmartDashboard.putData(autoChooser);
     }
 
     @Override
@@ -62,6 +75,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
+        CommandScheduler.getInstance().schedule(autoChooser.getSelected());
     }
 
     @Override
