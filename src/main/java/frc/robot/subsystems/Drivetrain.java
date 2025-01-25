@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -11,11 +10,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
 import frc.lib.subsystems.swerve.SdsMk4Module;
+import frc.lib.subsystems.swerve.SdsMk4Module.ModuleType;
 import frc.lib.subsystems.swerve.SwerveDrive;
 import frc.lib.subsystems.swerve.SwerveModuleIo;
-import frc.lib.subsystems.swerve.SdsMk4Module.ModuleType;
 
 public class Drivetrain extends SwerveDrive {
     private static final String canivoreBusName = "1559_Canivore";
