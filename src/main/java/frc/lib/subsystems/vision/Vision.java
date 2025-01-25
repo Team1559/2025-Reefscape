@@ -18,7 +18,7 @@ public class Vision extends SubsystemBase {
         for (VisionCameraIo cam : cameras){
             cam.periodic();
             VisionInputs inputs = cam.getInputs();
-            if (inputs.pose != null){
+            if (!Double.isNaN(inputs.timestamp)){
                 visionConsumer.addVisionMeasurement(inputs.pose, inputs.timestamp, VecBuilder.fill(0,0,0)); //FIXME: add standard deviations
             }
         }

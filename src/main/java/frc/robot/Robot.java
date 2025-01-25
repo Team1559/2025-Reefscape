@@ -23,7 +23,7 @@ public class Robot extends LoggedRobot {
     private final VisionChain vision;
 
     public Robot() {
-        Logger.addDataReceiver(new WPILOGWriter());
+        // Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg

@@ -16,8 +16,8 @@ public class VisionChain extends Vision{
 
     private static VisionCameraIo[] cameras(SwerveDrive swerveDrive){
         Supplier<Rotation2d> yaw = () -> swerveDrive.getPosition().getRotation();
-        VisionCameraIo frontRight = new LimelightCamera("vision/frontRightCamera", "frontRight", yaw);
-        VisionCameraIo frontLeft = new LimelightCamera("vision/frontLeftCamera", "frontLeft", yaw);
+        VisionCameraIo frontRight = new LimelightCamera("vision/frontRightCamera", "limelight-frontr", yaw);
+        VisionCameraIo frontLeft = new LimelightCamera("vision/frontLeftCamera", "limelight-frontl", yaw);
         //TODO: Add two more cameras! <3
         return new VisionCameraIo[] {frontRight, frontLeft}; 
         // eventual order: return new VisionCameraIo[] {frontRight, back, frontLeft, front}; 

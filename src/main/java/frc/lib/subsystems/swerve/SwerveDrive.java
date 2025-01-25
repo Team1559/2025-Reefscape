@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.estimator.PoseEstimator;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,11 +40,11 @@ public class SwerveDrive extends SubsystemBase implements VisionConsumer {
         this.odometry = new SwerveDriveOdometry(kinematics, heading.get(), positions);
         this.estimator = new SwerveDrivePoseEstimator(kinematics, heading.get(), positions, new Pose2d());
     }
-    
+
     public void driveFieldOriented(ChassisSpeeds speeds) {
         driveRobotOriented(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPosition().getRotation()));
     }
-    
+
     public void driveRobotOriented(ChassisSpeeds speeds) {
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         for (int i = 0; i < modules.length; i++) {
@@ -51,15 +52,15 @@ public class SwerveDrive extends SubsystemBase implements VisionConsumer {
             modules[i].setState(states[i]);
         }
     }
-    
+
     public Pose2d getPosition() {
         return estimator.getEstimatedPosition();
     }
-    
+
     public void addVisionMeasurement(Pose2d estimatedPose2d, double timestamp, Matrix<N3, N1> standardDeviation) {
         estimator.addVisionMeasurement(estimatedPose2d, timestamp, standardDeviation);
     }
-    
+
     @Override
     public void periodic() {
         log();
@@ -71,13 +72,13 @@ public class SwerveDrive extends SubsystemBase implements VisionConsumer {
         for (int i = 0; i < positions.length; i++) {
             positions[i] = modules[i].getPosition();
         }
-        odometry.update(heading.get(), positions);
+        estimator.update(heading.get(), positions);
     }
-    
+
     private String moduleLogPrefix(int moduleIndex) {
         return getName() + "/modules/" + modules[moduleIndex].getName();
     }
-    
+
     private void log() {
         for (int i = 0; i < modules.length; i++) {
             Logger.recordOutput(moduleLogPrefix(i) + "/currentState/angle", modules[i].getAngle());
@@ -89,7 +90,7 @@ public class SwerveDrive extends SubsystemBase implements VisionConsumer {
             Logger.recordOutput(moduleLogPrefix(i) + "/steerMotor/current", modules[i].getSteerMotorCurrent());
             Logger.recordOutput(moduleLogPrefix(i) + "/steerMotor/temperature", modules[i].getSteerMotorTemperature());
         }
-    
+
         Logger.recordOutput(getName() + "/estimatedPosition", getPosition());
         Logger.recordOutput(getName() + "/heading", heading.get());
     }
