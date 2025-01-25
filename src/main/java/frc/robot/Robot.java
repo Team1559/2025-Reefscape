@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.lib.subsystems.Led;
+import frc.lib.subsystems.Leds;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
 
@@ -33,7 +33,7 @@ public class Robot extends LoggedRobot {
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
-    private final Led led;
+    private final Leds led;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -49,7 +49,7 @@ public class Robot extends LoggedRobot {
 
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
-        led = new Led(0, 144);
+        led = new Leds(0, 144);
     }
 
     @Override
