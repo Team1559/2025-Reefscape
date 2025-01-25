@@ -47,7 +47,7 @@ public class Robot extends LoggedRobot {
     @Override
     public void robotInit() {
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
-                pilotController::getRightX, 6, 6, drivetrain));
+                pilotController::getRightX, 5.21, 1.925, drivetrain));
     }
 
     @Override

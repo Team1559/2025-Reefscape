@@ -16,7 +16,7 @@ public class TeleopDriveCommand extends Command {
 
     private final SwerveDrive swerveDrive;
 
-    private static final double DEADBAND = .05;
+    private static final double DEADBAND = .10;
 
     public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier,
             double maxLinearVelocity, double maxRotationalVelocity, SwerveDrive swerveDrive) {
