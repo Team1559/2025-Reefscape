@@ -13,12 +13,14 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.VisionChain;
 
 public class Robot extends LoggedRobot {
     private final CommandXboxController pilotController;
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
+    private final VisionChain vision;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -30,7 +32,7 @@ public class Robot extends LoggedRobot {
         // coPilotController = new CommandXboxController(1);
 
         drivetrain = new Drivetrain();
-
+        vision = new VisionChain(drivetrain);
     }
 
     @Override
