@@ -1,6 +1,7 @@
-package frc.robot.subsystems.elevator;
+package frc.lib.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import frc.lib.BaseIo;
@@ -9,7 +10,7 @@ public class ElevatorIo extends BaseIo<ElevatorIo.ElevatorInputs> {
     @AutoLog
     public static abstract class ElevatorInputs implements LoggableInputs {
         public boolean lowerLimitSwitch;
-        public double motorPosition;
+        public double currentPosition;
         public double motorCurrent;
     }
 
@@ -22,6 +23,11 @@ public class ElevatorIo extends BaseIo<ElevatorIo.ElevatorInputs> {
     }
 
     public void setTargetPosition(double pos) {
+        Logger.recordOutput(getLogPath("TargetPosition"), pos);
+    }
 
+    public void stop() {
+        double currentPos = getInputs().currentPosition;
+        setTargetPosition(currentPos);
     }
 }

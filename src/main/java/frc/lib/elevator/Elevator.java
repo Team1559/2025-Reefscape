@@ -1,8 +1,7 @@
-package frc.robot.subsystems;
+package frc.lib.elevator;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.elevator.ElevatorIo;
-import frc.robot.subsystems.elevator.ElevatorIo.ElevatorInputs;
+import frc.lib.elevator.ElevatorIo.ElevatorInputs;
 
 public class Elevator extends SubsystemBase {
     private ElevatorIo io;
@@ -19,6 +18,9 @@ public class Elevator extends SubsystemBase {
     }
     public boolean isAtTargetPosition (double tolerance) {
         ElevatorInputs inputs = io.getInputs();
-        return Math.abs(inputs.motorPosition - targetPosition) < tolerance;
+        return Math.abs(inputs.currentPosition - targetPosition) < tolerance;
+    }
+    public void stop() {
+        io.stop();
     }
 }
