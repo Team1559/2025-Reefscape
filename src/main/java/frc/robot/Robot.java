@@ -32,7 +32,7 @@ public class Robot extends LoggedRobot {
     private final Elevator2025 elevator;
     
     public Robot() {
-        // Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg

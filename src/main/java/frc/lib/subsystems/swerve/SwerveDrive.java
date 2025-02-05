@@ -127,7 +127,7 @@ estimator.update(heading.get(), getModulePositions());
 
         Logger.recordOutput(getName() + "/estimatedPosition", getPosition());
         Logger.recordOutput(getName() + "/heading", heading.get());
-        Logger.recordOutput(getName() + "/distanceToTag19", getPosition().getTranslation().minus(new Translation2d(4.074,4.745)).getNorm());
+        // Logger.recordOutput(getName() + "/distanceToTag19", getPosition().getTranslation().minus(new Translation2d(4.074,4.745)).getNorm());
     }
 
 }
