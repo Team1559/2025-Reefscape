@@ -1,7 +1,7 @@
-package frc.lib.elevator;
+package frc.lib.subsystems.elevator;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.elevator.ElevatorIo.ElevatorInputs;
+import frc.lib.subsystems.elevator.ElevatorIo.ElevatorInputs;
 
 public class Elevator extends SubsystemBase {
     private ElevatorIo io;

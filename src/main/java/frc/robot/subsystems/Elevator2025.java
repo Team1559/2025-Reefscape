@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import frc.lib.elevator.Elevator;
+import frc.lib.subsystems.elevator.Elevator;
 
 public class Elevator2025 extends Elevator {
     private static final int MOTOR_ID = 89;

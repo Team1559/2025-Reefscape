@@ -1,10 +1,11 @@
-package frc.lib.elevator;
+package frc.lib.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import frc.lib.BaseIo;
+import frc.lib.elevator.ElevatorInputsAutoLogged;
 
 public class ElevatorIo extends BaseIo<ElevatorIo.ElevatorInputs> {
     @AutoLog

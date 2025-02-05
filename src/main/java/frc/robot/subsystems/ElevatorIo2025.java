@@ -16,7 +16,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
-import frc.lib.elevator.ElevatorIo;
+import frc.lib.subsystems.elevator.ElevatorIo;
 
 public class ElevatorIo2025 extends ElevatorIo {
     private static final double GEAR_RATIO = 25;
