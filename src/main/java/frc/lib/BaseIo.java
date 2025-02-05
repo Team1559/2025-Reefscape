@@ -16,7 +16,7 @@ public abstract class BaseIo<T extends LoggableInputs> {
         return inputs;
     }
 
-    public final void periodic(){
+    public void periodic(){
         updateInputs(inputs); //FIXME: NOT ON REPLAY!
         Logger.processInputs(logPath, inputs);
     }
