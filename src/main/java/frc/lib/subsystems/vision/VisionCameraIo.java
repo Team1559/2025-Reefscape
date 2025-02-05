@@ -11,6 +11,7 @@ public class VisionCameraIo extends BaseIo<VisionCameraIo.VisionInputs> {
     public static abstract class VisionInputs implements LoggableInputs {
         public Pose2d pose;
         public double timestamp;
+        public boolean hasPose;
     }
 
     public VisionCameraIo(String logPath){

@@ -5,11 +5,11 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 
-public class LimelightCamera extends VisionCameraIo {
+public class LimelightCameraIo extends VisionCameraIo {
     private final String name;
     private final Supplier<Rotation2d> yaw;
 
-    public LimelightCamera(String logPath, String name, Supplier<Rotation2d> yaw) {
+    public LimelightCameraIo(String logPath, String name, Supplier<Rotation2d> yaw) {
         super(logPath);
         this.name = name;
         this.yaw = yaw;
@@ -27,15 +27,14 @@ public class LimelightCamera extends VisionCameraIo {
             estimate = LimelightHelpers.getBotPoseEstimate_wpiBlue(name);
         }
 
-        if (estimate == null) {
+        if (estimate == null || estimate.tagCount <= 0) {
             inputs.pose = null;
             inputs.timestamp = Double.NaN;
-        } else if (estimate.tagCount > 0) {
+            inputs.hasPose = false;
+        } else {
             inputs.pose = estimate.pose;
             inputs.timestamp = estimate.timestampSeconds;
-        } else {
-            inputs.pose = null;
-            inputs.timestamp = Double.NaN;
+            inputs.hasPose = true;
         }
     }
 }
