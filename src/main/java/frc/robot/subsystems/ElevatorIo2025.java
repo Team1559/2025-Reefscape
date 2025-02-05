@@ -68,6 +68,7 @@ public class ElevatorIo2025 extends ElevatorIo {
 
     @Override
     public void setTargetPosition(double targetHeight) {
+        super.setTargetPosition(targetHeight);
         motorController.setReference(heightToMotorRotations(targetHeight), ControlType.kMAXMotionPositionControl,
                 ClosedLoopSlot.kSlot0, GRAVITY_FEEDFORWARD);
     }
