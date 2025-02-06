@@ -8,16 +8,16 @@ import frc.lib.subsystems.vision.LimelightCameraIo;
 import frc.lib.subsystems.vision.Vision;
 import frc.lib.subsystems.vision.VisionCameraIo;
 
-public class VisionChain extends Vision {
+public class Vision2025 extends Vision {
 
-    public VisionChain(SwerveDrive swerveDrive) {
-        super("vision", swerveDrive, cameras(swerveDrive));
+    public Vision2025(SwerveDrive swerveDrive) {
+        super("Vision", swerveDrive, cameras(swerveDrive));
     }
 
     private static VisionCameraIo[] cameras(SwerveDrive swerveDrive) {
         Supplier<Rotation2d> yaw = () -> swerveDrive.getPosition().getRotation();
-        VisionCameraIo frontRight = new LimelightCameraIo("FrontRight","limelight-frontr", yaw);
-        VisionCameraIo frontLeft = new LimelightCameraIo("FrontLeft","limelight-frontl",yaw);
+        VisionCameraIo frontRight = new LimelightCameraIo("FrontRight", "limelight-frontr", yaw);
+        VisionCameraIo frontLeft = new LimelightCameraIo("FrontLeft", "limelight-frontl", yaw);
         // TODO: Add two more cameras! <3
         return new VisionCameraIo[] { frontRight, frontLeft };
         // eventual order: return new VisionCameraIo[] {frontRight, back, frontLeft,
