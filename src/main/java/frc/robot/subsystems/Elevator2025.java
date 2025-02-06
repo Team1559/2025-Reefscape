@@ -9,6 +9,6 @@ public class Elevator2025 extends Elevator {
     private static final int MOTOR_ID = 89; //FIXME set this to the real motor id
     
     public Elevator2025() {
-        super(new ElevatorIo2025("/Elevator", new SparkFlex(MOTOR_ID, MotorType.kBrushless)));
+        super("Elevator", new ElevatorIo2025("IO", new SparkFlex(MOTOR_ID, MotorType.kBrushless)));
     }
 }

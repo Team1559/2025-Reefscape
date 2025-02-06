@@ -32,8 +32,8 @@ public class ElevatorIo2025 extends ElevatorIo {
     private final SparkClosedLoopController motorController;
     private final SparkLimitSwitch limitSwitch;
 
-    public ElevatorIo2025(String logPath, SparkFlex motor) {
-        super(logPath);
+    public ElevatorIo2025(String name, SparkFlex motor) {
+        super(name);
         this.motor = motor;
         this.encoder = motor.getEncoder();
         this.motorController = motor.getClosedLoopController();
