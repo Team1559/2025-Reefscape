@@ -18,6 +18,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
+import frc.robot.subsystems.Elevator2025;
+import frc.robot.subsystems.Vision2025;
 
 public class Robot extends LoggedRobot {
 
@@ -26,21 +28,22 @@ public class Robot extends LoggedRobot {
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
+    private final Vision2025 vision;
+    private final Elevator2025 elevator;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
-        
-        
-        
+
         pilotController = new CommandXboxController(0);
         // coPilotController = new CommandXboxController(1);
-        
+
         drivetrain = new Drivetrain();
+        vision = new Vision2025(drivetrain);
         drivetrain.configureAuto(23.2, 8);
-        
+        elevator = new Elevator2025();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
     }

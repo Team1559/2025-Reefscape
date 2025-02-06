@@ -17,21 +17,19 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.subsystems.vision.VisionConsumer;
 
-public class SwerveDrive extends SubsystemBase {
+public class SwerveDrive extends SubsystemBase implements VisionConsumer {
     private final SwerveModuleIo[] modules;
     private final SwerveDriveKinematics kinematics;
-    private final SwerveDriveOdometry odometry;
     private final SwerveDrivePoseEstimator estimator;
     private final Supplier<Rotation2d> heading;
     private final Translation2d[] locations;
@@ -47,7 +45,6 @@ public class SwerveDrive extends SubsystemBase {
         }
         this.locations = locations;
         this.kinematics = new SwerveDriveKinematics(locations);
-        this.odometry = new SwerveDriveOdometry(kinematics, heading.get(), positions);
         this.estimator = new SwerveDrivePoseEstimator(kinematics, heading.get(), positions, new Pose2d());
         // TODO: make constants
     }
@@ -105,7 +102,7 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void updateOdometry() {
-        odometry.update(heading.get(), getModulePositions());
+estimator.update(heading.get(), getModulePositions());
     }
 
     private String moduleLogPrefix(int moduleIndex) {
@@ -130,6 +127,7 @@ public class SwerveDrive extends SubsystemBase {
 
         Logger.recordOutput(getName() + "/estimatedPosition", getPosition());
         Logger.recordOutput(getName() + "/heading", heading.get());
+        // Logger.recordOutput(getName() + "/distanceToTag19", getPosition().getTranslation().minus(new Translation2d(4.074,4.745)).getNorm());
     }
 
 }
