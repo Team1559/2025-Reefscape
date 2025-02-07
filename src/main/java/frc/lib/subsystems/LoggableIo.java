@@ -1,4 +1,4 @@
-package frc.lib;
+package frc.lib.subsystems;
 
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
@@ -36,5 +36,7 @@ public abstract class LoggableIo<T extends LoggableInputs> {
         return logPath + "/Outputs/" + suffix;
     }
 
-    protected abstract void updateInputs(T inputs);
+    protected void updateInputs(T inputs) {
+        throw new UnsupportedOperationException("Use an IO implementation when not replaying from log file");
+    }
 }
