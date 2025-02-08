@@ -18,9 +18,14 @@ public class Elevator extends LoggableSubsystem {
 
     public void setTargetPosition(double pos) {
         targetPosition = pos;
+        System.out.println(targetPosition);
         io.setTargetPosition(pos);
     }
-    
+
+    public void changeTargetPosition(double diff){
+        setTargetPosition(io.getInputs().currentPosition + diff);
+    }
+
     public boolean isAtTargetPosition (double tolerance) {
         ElevatorInputs inputs = io.getInputs();
         return Math.abs(inputs.currentPosition - targetPosition) < tolerance;

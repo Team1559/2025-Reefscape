@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
@@ -52,6 +53,8 @@ public class Robot extends LoggedRobot {
     public void robotInit() {
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
+        pilotController.leftBumper().onTrue(new InstantCommand(()-> elevator.setTargetPosition(1), elevator));
+        pilotController.rightBumper().onTrue(new InstantCommand(() -> elevator.setTargetPosition(0)));
     }
 
     @Override

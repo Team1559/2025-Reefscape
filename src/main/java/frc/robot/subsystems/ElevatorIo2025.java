@@ -25,25 +25,28 @@ public class ElevatorIo2025 extends ElevatorIo {
     private static final double MAX_HEIGHT = Units.inchesToMeters(55);
     private static final double MAX_VELOCITY = 0.5;
     private static final double MAX_ACCEL = 0.5;
-    private static final double GRAVITY_FEEDFORWARD = 0; // TODO: change this
+    private static final double GRAVITY_FEEDFORWARD = .0; // TODO: change this
 
     private final SparkFlex motor;
     private final RelativeEncoder encoder;
     private final SparkClosedLoopController motorController;
-    private final SparkLimitSwitch limitSwitch;
+    // private final SparkLimitSwitch limitSwitch;
+    private final DigitalInput dioLimitSwitch;
 
     public ElevatorIo2025(String name, SparkFlex motor) {
         super(name);
         this.motor = motor;
         this.encoder = motor.getEncoder();
         this.motorController = motor.getClosedLoopController();
-        this.limitSwitch = motor.getReverseLimitSwitch();
+        // this.limitSwitch = motor.getReverseLimitSwitch();
+        this.dioLimitSwitch = new DigitalInput(8);
 
+        
         SparkFlexConfig motorConfig = new SparkFlexConfig();
         motorConfig.idleMode(IdleMode.kBrake);
         motorConfig.closedLoop.maxMotion.maxVelocity(heightToMotorRotations(MAX_VELOCITY) * 60);
         motorConfig.closedLoop.maxMotion.maxAcceleration(heightToMotorRotations(MAX_ACCEL) * 60);
-        motorConfig.closedLoop.pid(0, 0, 0); // TODO: set these later
+        motorConfig.closedLoop.pid(1, 0, 0); // TODO: set these later
         motorConfig.inverted(false);
 
         motorConfig.softLimit.forwardSoftLimit(heightToMotorRotations(MAX_HEIGHT));
@@ -53,7 +56,8 @@ public class ElevatorIo2025 extends ElevatorIo {
 
     @Override
     protected void updateInputs(ElevatorInputs inputs) {
-        inputs.lowerLimitSwitch = limitSwitch.isPressed();
+        // inputs.lowerLimitSwitch = limitSwitch.isPressed();
+        inputs.lowerLimitSwitch = !dioLimitSwitch.get();
         inputs.currentPosition = motorRotationsToHeight(encoder.getPosition());
         inputs.motorCurrent = motor.getOutputCurrent();
     }
@@ -61,7 +65,8 @@ public class ElevatorIo2025 extends ElevatorIo {
     @Override
     public void periodic() {
         super.periodic();
-        if (limitSwitch.isPressed()) {
+        // if (limitSwitch.isPressed()) {
+        if(dioLimitSwitch.get()){
             encoder.setPosition(0);
         }
     }
