@@ -51,7 +51,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         addIo(gyro, "Gyro");
         this.locations = locations;
         this.kinematics = new SwerveDriveKinematics(locations);
-        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, new Pose2d());
+        this.estimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(), positions, new Pose2d());
         // TODO: make constants
     }
 
