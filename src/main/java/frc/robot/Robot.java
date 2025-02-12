@@ -53,8 +53,8 @@ public class Robot extends LoggedRobot {
     public void robotInit() {
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
-        pilotController.leftBumper().onTrue(new InstantCommand(()-> elevator.setTargetPosition(1), elevator));
-        pilotController.rightBumper().onTrue(new InstantCommand(() -> elevator.setTargetPosition(0)));
+        pilotController.leftBumper().onTrue(new InstantCommand(()-> elevator.setTargetPosition(.5), elevator));
+        pilotController.rightBumper().onTrue(new InstantCommand(() -> elevator.setTargetPosition(-999)));
     }
 
     @Override

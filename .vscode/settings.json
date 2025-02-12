@@ -65,6 +65,7 @@
     "DEADBAND",
     "odometry",
     "setpoint",
-    "Teleop"
+    "Teleop",
+    "WPILOG"
   ]
 }
