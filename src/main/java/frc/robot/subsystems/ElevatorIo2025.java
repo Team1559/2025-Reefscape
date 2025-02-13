@@ -15,7 +15,7 @@ import edu.wpi.first.math.util.Units;
 import frc.lib.subsystems.elevator.ElevatorIo;
 
 public class ElevatorIo2025 extends ElevatorIo {
-    private static final double GEAR_RATIO = 25;
+    private static final double GEAR_RATIO = 9;
     private static final int GEAR_TEETH = 13;
     private static final double RACK_SPACING = Units.inchesToMeters(3D / 8D);
     private static final double MAX_HEIGHT = Units.inchesToMeters(55);
