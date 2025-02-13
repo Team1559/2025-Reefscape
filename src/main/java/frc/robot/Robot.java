@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,10 +52,28 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        double elevatorOffset = Units.inchesToMeters(35); // TODO: offset between the target height from ground and
+                                                          // elevator target height
+        InstantCommand levelOne = new InstantCommand(
+                () -> elevator.setTargetPosition(Units.inchesToMeters(18) - elevatorOffset),
+                elevator); // TODO: change heights to real height after starting height is accounted for
+        InstantCommand levelTwo = new InstantCommand(
+                () -> elevator.setTargetPosition(Units.inchesToMeters(31.875) - elevatorOffset),
+                elevator);
+        InstantCommand levelThree = new InstantCommand(
+                () -> elevator.setTargetPosition(Units.inchesToMeters(42.625) - elevatorOffset),
+                elevator);
+        InstantCommand levelFour = new InstantCommand(
+                () -> elevator.setTargetPosition(Units.inchesToMeters(72) - elevatorOffset),
+                elevator);
+
+        pilotController.a().onTrue(levelOne);
+        pilotController.b().onTrue(levelTwo);
+        pilotController.x().onTrue(levelThree);
+        pilotController.y().onTrue(levelFour);
+        
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
-        pilotController.leftBumper().onTrue(new InstantCommand(()-> elevator.setTargetPosition(.5), elevator));
-        pilotController.rightBumper().onTrue(new InstantCommand(() -> elevator.setTargetPosition(-999)));
     }
 
     @Override
