@@ -20,6 +20,9 @@ import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Vision2025;
+import frc.robot.subsystems.intake.AlgaeIntake;
+import frc.robot.subsystems.intake.CoralIntake;
+import frc.robot.subsystems.intake.Intake;
 
 public class Robot extends LoggedRobot {
 
@@ -30,6 +33,8 @@ public class Robot extends LoggedRobot {
     private final Drivetrain drivetrain;
     private final Vision2025 vision;
     private final Elevator2025 elevator;
+    private final Intake coralIntake;
+    private final Intake algaeIntake;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -44,6 +49,8 @@ public class Robot extends LoggedRobot {
         vision = new Vision2025(drivetrain);
         drivetrain.configureAuto(23.2, 8);
         elevator = new Elevator2025();
+        coralIntake = new CoralIntake();
+        algaeIntake = new AlgaeIntake();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
     }
