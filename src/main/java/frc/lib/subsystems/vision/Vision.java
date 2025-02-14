@@ -1,6 +1,5 @@
 package frc.lib.subsystems.vision;
 
-
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.VecBuilder;
@@ -26,10 +25,12 @@ public class Vision extends LoggableSubsystem {
     public void periodic() {
         super.periodic();
         boolean robotHasPose = false;
-        for (VisionCameraIo cam : cameras){
+        for (VisionCameraIo cam : cameras) {
             VisionInputs inputs = cam.getInputs();
-            if (inputs.hasPose){
-                visionConsumer.addVisionMeasurement(inputs.pose, inputs.timestamp, VecBuilder.fill(0,0,0)); //FIXME: add standard deviations
+            if (inputs.hasPose) {
+                // FIXME: check standard deviations: is the rotations in radians?
+                visionConsumer.addVisionMeasurement(inputs.pose, inputs.timestamp,
+                        VecBuilder.fill(inputs.stdevX, inputs.stdevY, inputs.stdevRotation.getRadians()));
                 robotHasPose = true;
             }
         }

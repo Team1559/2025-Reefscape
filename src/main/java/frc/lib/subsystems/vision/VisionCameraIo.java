@@ -4,6 +4,7 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib.LoggableIo;
 
 public class VisionCameraIo extends LoggableIo<VisionCameraIo.VisionInputs> {
@@ -12,6 +13,9 @@ public class VisionCameraIo extends LoggableIo<VisionCameraIo.VisionInputs> {
         public Pose2d pose;
         public double timestamp;
         public boolean hasPose;
+        public double stdevX;
+        public double stdevY;
+        public Rotation2d stdevRotation;
     }
 
     public VisionCameraIo(String name) {
