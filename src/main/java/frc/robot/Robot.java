@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
@@ -27,6 +28,7 @@ public class Robot extends LoggedRobot {
 
     private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
+    //private final FunctionalCommand goToZero;
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
@@ -66,12 +68,16 @@ public class Robot extends LoggedRobot {
         InstantCommand levelFour = new InstantCommand(
                 () -> elevator.setTargetPosition(Units.inchesToMeters(72) - elevatorOffset),
                 elevator);
+        InstantCommand reset = new InstantCommand(
+                () -> elevator.setTargetPosition(-2.1),
+                elevator);
 
         pilotController.a().onTrue(levelOne);
         pilotController.b().onTrue(levelTwo);
         pilotController.x().onTrue(levelThree);
         pilotController.y().onTrue(levelFour);
-        
+        pilotController.povDown().onTrue(reset);
+
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
     }
@@ -94,8 +100,13 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
+        FunctionalCommand goToZero = new FunctionalCommand(elevator :: goToZero, () -> {
+        }, (b) -> {
+        }, elevator :: isHome, elevator);
+        CommandScheduler.getInstance().schedule(goToZero);
+        
     }
-
+ 
     @Override
     public void teleopPeriodic() {
     }

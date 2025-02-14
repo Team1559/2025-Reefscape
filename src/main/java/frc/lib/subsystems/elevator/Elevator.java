@@ -34,4 +34,12 @@ public class Elevator extends LoggableSubsystem {
     public void stop() {
         io.stop();
     }
+
+    public void goToZero(){
+        io.goToZero(); 
+        targetPosition = 0;  
+    }
+    public boolean isHome(){
+        return io.getInputs().isHome;
+    }
 }
