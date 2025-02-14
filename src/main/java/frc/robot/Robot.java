@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import javax.tools.JavaCompiler.CompilationTask;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -11,10 +13,12 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.subsystems.Drivetrain;
@@ -28,7 +32,7 @@ public class Robot extends LoggedRobot {
 
     private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
-    // private final CommandXboxController coPilotController;
+    private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
     private final Vision2025 vision;
@@ -43,7 +47,7 @@ public class Robot extends LoggedRobot {
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
 
         pilotController = new CommandXboxController(0);
-        // coPilotController = new CommandXboxController(1);
+        coPilotController = new CommandXboxController(1);
 
         drivetrain = new Drivetrain();
         vision = new Vision2025(drivetrain);
@@ -59,6 +63,23 @@ public class Robot extends LoggedRobot {
     public void robotInit() {
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
+
+        coPilotController.rightTrigger().onTrue(new InstantCommand(() -> algaeIntake.run(false), algaeIntake));
+        coPilotController.rightBumper().onTrue(new InstantCommand(() -> algaeIntake.run(true), algaeIntake));
+        coPilotController.rightBumper().or(coPilotController.rightTrigger())
+                .onFalse(new InstantCommand(algaeIntake::stop, algaeIntake));
+
+        coPilotController.leftTrigger().onTrue(new InstantCommand(() -> coralIntake.run(false), coralIntake));
+        coPilotController.leftBumper().onTrue(new InstantCommand(() -> coralIntake.run(true), coralIntake));
+        coPilotController.leftBumper().or(coPilotController.leftTrigger())
+                .onFalse(new InstantCommand(coralIntake::stop, coralIntake));
+
+        coPilotController.povUp().onTrue(new InstantCommand(() -> algaeIntake.setAngle(new Rotation2d()), algaeIntake));
+        coPilotController.povDown().onTrue(new InstantCommand(() -> algaeIntake.setAngle(new Rotation2d()), algaeIntake));
+        
+        coPilotController.povLeft().onTrue(new InstantCommand(() -> coralIntake.setAngle(new Rotation2d()), coralIntake));
+        coPilotController.povRight().onTrue(new InstantCommand(() -> coralIntake.setAngle(new Rotation2d()), coralIntake));
+        //TODO: ADD ANGLES FOR ALL ROTATION2D'S. PR (Pull Request)
     }
 
     @Override
