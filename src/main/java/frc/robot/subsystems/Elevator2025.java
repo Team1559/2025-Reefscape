@@ -22,7 +22,6 @@ public class Elevator2025 extends Elevator {
 
         IntakeOffset(double heightOffset) {
             this.heightOffset = heightOffset;
-
         }
     }
 

@@ -31,7 +31,6 @@ public class Robot extends LoggedRobot {
 
     private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
-    // private final FunctionalCommand goToZero;
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
