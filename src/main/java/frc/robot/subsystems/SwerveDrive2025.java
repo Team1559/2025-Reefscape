@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.function.Supplier;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -17,11 +15,14 @@ import frc.lib.subsystems.swerve.SdsSwerveModuleIo.ModuleType;
 import frc.lib.subsystems.swerve.SwerveDrive;
 import frc.lib.subsystems.swerve.SwerveModuleIo;
 
-public class Drivetrain extends SwerveDrive {
+public class SwerveDrive2025 extends SwerveDrive {
     private static final String canivoreBusName = "1559_Canivore";
+    private static final double MASS = 23.2;
+    private static final double MOI = 8;
 
-    public Drivetrain() {
+    public SwerveDrive2025() {
         super("SwerveDrive", createGyro(), createModules());
+        configureAuto(MASS, MOI);
     }
 
     private static SwerveModuleIo createSwerveModule(String name, int steerMotorId, int driveMotorId,
