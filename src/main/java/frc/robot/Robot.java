@@ -11,14 +11,20 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
+import frc.robot.commands.ElevatorHeightCommand2025;
 import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Elevator2025;
+import frc.robot.subsystems.Elevator2025.IntakeOffset;
+import frc.robot.subsystems.Elevator2025.Level;
 import frc.robot.subsystems.Vision2025;
 
 public class Robot extends LoggedRobot {
@@ -39,7 +45,7 @@ public class Robot extends LoggedRobot {
 
         pilotController = new CommandXboxController(0);
         // coPilotController = new CommandXboxController(1);
-
+      
         drivetrain = new SwerveDrive2025();
         vision = new Vision2025(drivetrain);
         elevator = new Elevator2025();
@@ -49,6 +55,20 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        Command levelOne = new ElevatorHeightCommand2025(elevator, Level.L1, IntakeOffset.CORAL);
+        Command levelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.CORAL);
+        Command levelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.CORAL);
+        Command levelFour = new ElevatorHeightCommand2025(elevator, Level.L4, IntakeOffset.CORAL);
+        Command reset = new InstantCommand(
+                () -> elevator.goHome(),
+                elevator);
+
+        pilotController.a().onTrue(levelOne);
+        pilotController.b().onTrue(levelTwo);
+        pilotController.x().onTrue(levelThree);
+        pilotController.y().onTrue(levelFour);
+        pilotController.povDown().onTrue(reset);
+
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
     }
@@ -71,6 +91,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
+        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+        }, (b) -> {
+        }, elevator::isHome, elevator);
+        CommandScheduler.getInstance().schedule(goToZero);
+
     }
 
     @Override

@@ -9,7 +9,7 @@ import frc.lib.subsystems.LoggableIo;
 public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
     @AutoLog
     public static abstract class ElevatorInputs implements LoggableInputs {
-        public boolean lowerLimitSwitch;
+        public boolean isHome;
         public double currentPosition;
         public double motorCurrent;
     }
@@ -25,5 +25,9 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
     public void stop() {
         double currentPos = getInputs().currentPosition;
         setTargetPosition(currentPos);
+    }
+
+    public void goHome() {
+        Logger.recordOutput(getOutputLogPath("TargetPosition"), 0);
     }
 }
