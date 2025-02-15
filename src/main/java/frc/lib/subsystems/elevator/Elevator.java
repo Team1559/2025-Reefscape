@@ -1,7 +1,7 @@
 package frc.lib.subsystems.elevator;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.LoggableSubsystem;
+import frc.lib.subsystems.LoggableSubsystem;
 import frc.lib.subsystems.elevator.ElevatorIo.ElevatorInputs;
 
 public class Elevator extends LoggableSubsystem {
@@ -31,7 +31,7 @@ public class Elevator extends LoggableSubsystem {
         ElevatorInputs inputs = io.getInputs();
         return Math.abs(inputs.currentPosition - targetPosition + heightOffset) < tolerance;
     }
-
+    
     public void stop() {
         io.stop();
     }

@@ -1,90 +1,60 @@
 package frc.lib.subsystems.swerve;
 
+import java.nio.channels.UnsupportedAddressTypeException;
+
+import org.littletonrobotics.junction.AutoLog;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import frc.lib.subsystems.LoggableIo;
 
-public interface SwerveModuleIo {
+public class SwerveModuleIo extends LoggableIo<SwerveModuleIo.SwerveInputs> {
+    @AutoLog
+    public static abstract class SwerveInputs implements LoggableInputs {
+        public double speed;
+        public Rotation2d angle;
+        public double distance;
+        public double steerMotorTemp;
+        public double driveMotorTemp;
+        public double steerMotorCurrent;
+        public double driveMotorCurrent;
+    }
+    
+    private final Translation2d location;
+
+    public SwerveModuleIo(String name, Translation2d location) {
+        super(name, new SwerveInputsAutoLogged());
+        this.location = location;
+    }
+
     /**
      * Sets the speed of the wheel.
      * 
      * @param speed the desired wheel speed in meters per second
      */
-    void setSpeed(double speed);
+    public void setSpeed(double speed) {
+        Logger.recordOutput(getOutputLogPath("Speed"), speed);
+    }
 
     /**
      * Sets the target direction for the wheel 
-     * @param angle the disired angle of the wheel 
+     * @param angle the desired angle of the wheel 
      */
-    void setAngle(Rotation2d angle);
+    public void setAngle(Rotation2d angle) {
+        Logger.recordOutput(getOutputLogPath("Angle"), angle);
+    }
 /**
  * @return The location of the wheel relative to the origin of the robot in meters
  */
-    Translation2d getLocation();
-/**
- * 
- * @return The current wheel speed in meters per second 
- */
-    double getSpeed();
-/**
- * The current heading of the wheel 
- * @return THe current heading of the wheel 
- */
-    Rotation2d getAngle();
-/**
- * The distance a wheel has spun 
- * @return The current distance of the wheel in meters 
- */
-    double getDistanceTraveled();
-/**
- * The heat of the steer motor 
- * @return The heat of the steer motor in Celsius 
- */
-    double getSteerMotorTemperature();
-/**
- * The heat of the drive motor 
- * @return The heat of the drive motor in Celsius 
- */
-    double getDriveMotorTemperature();
-/**
- *  returns the steer motor current  
- * @return The steer motor current amps 
- */
-    double getSteerMotorCurrent();
-/**
- * returns the drive motor current 
- * @return returns the drive motor current in amps 
- */
-    double getDriveMotorCurrent();
-/**
- * returns the name of the module
- * @return returns the name of the module
- */
-    String getName();
-/**
- * 
- * @return gets the setpoint, with both speed and angle
- */
-    SwerveModuleState getSetpoint();
-
-/**
- * 
- * @return gets the current state, with speed and angle
- */
-    default SwerveModuleState getCurrentState(){
-        return new SwerveModuleState(getSpeed(), getAngle());
+    public Translation2d getLocation() {
+        return location;
     }
 
-    /**
-     * it returns the swerve module
-     * @return
-     */
-    default SwerveModulePosition getPosition() {
-        return new SwerveModulePosition(getDistanceTraveled(), getAngle());
-    }
-
-    default void setState(SwerveModuleState state) {
+    public void setState(SwerveModuleState state) {
         setAngle(state.angle);
         setSpeed(state.speedMetersPerSecond);
     }
