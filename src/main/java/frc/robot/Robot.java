@@ -20,15 +20,18 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
+import frc.robot.commands.ElevatorHeightCommand2025;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator2025;
+import frc.robot.subsystems.Elevator2025.IntakeOffset;
+import frc.robot.subsystems.Elevator2025.Level;
 import frc.robot.subsystems.Vision2025;
 
 public class Robot extends LoggedRobot {
 
     private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
-    //private final FunctionalCommand goToZero;
+    // private final FunctionalCommand goToZero;
     // private final CommandXboxController coPilotController;
 
     private final Drivetrain drivetrain;
@@ -45,7 +48,7 @@ public class Robot extends LoggedRobot {
         // coPilotController = new CommandXboxController(1);
 
         drivetrain = new Drivetrain();
-        vision = new Vision2025(drivetrain);
+        vision = new Vision2025(drivetrain);                                                                                                                                                                                       
         drivetrain.configureAuto(23.2, 8);
         elevator = new Elevator2025();
         autoChooser = AutoBuilder.buildAutoChooser();
@@ -54,22 +57,12 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        double elevatorOffset = Units.inchesToMeters(35); // TODO: offset between the target height from ground and
-                                                          // elevator target height
-        InstantCommand levelOne = new InstantCommand(
-                () -> elevator.setTargetPosition(Units.inchesToMeters(18) - elevatorOffset),
-                elevator); // TODO: change heights to real height after starting height is accounted for
-        InstantCommand levelTwo = new InstantCommand(
-                () -> elevator.setTargetPosition(Units.inchesToMeters(31.875) - elevatorOffset),
-                elevator);
-        InstantCommand levelThree = new InstantCommand(
-                () -> elevator.setTargetPosition(Units.inchesToMeters(42.625) - elevatorOffset),
-                elevator);
-        InstantCommand levelFour = new InstantCommand(
-                () -> elevator.setTargetPosition(Units.inchesToMeters(72) - elevatorOffset),
-                elevator);
-        InstantCommand reset = new InstantCommand(
-                () -> elevator.setTargetPosition(-2.1),
+        Command levelOne = new ElevatorHeightCommand2025(elevator, Level.L1, IntakeOffset.CORAL);
+        Command levelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.CORAL);
+        Command levelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.CORAL);
+        Command levelFour = new ElevatorHeightCommand2025(elevator, Level.L4, IntakeOffset.CORAL);
+        Command reset = new InstantCommand(
+                () -> elevator.goHome(),
                 elevator);
 
         pilotController.a().onTrue(levelOne);
@@ -100,13 +93,13 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-        FunctionalCommand goToZero = new FunctionalCommand(elevator :: goToZero, () -> {
+        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
         }, (b) -> {
-        }, elevator :: isHome, elevator);
+        }, elevator::isHome, elevator);
         CommandScheduler.getInstance().schedule(goToZero);
-        
+
     }
- 
+
     @Override
     public void teleopPeriodic() {
     }

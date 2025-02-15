@@ -84,8 +84,8 @@ public class ElevatorIo2025 extends ElevatorIo {
     }
 
     @Override
-    public void goToZero() {
-        super.goToZero();
-        motor.setVoltage(-12 * 0.03);
+    public void goHome() {
+        super.goHome();
+        motor.setVoltage(-12 * 0.05);
     }
 }

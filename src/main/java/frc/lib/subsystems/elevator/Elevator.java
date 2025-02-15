@@ -5,41 +5,43 @@ import frc.lib.LoggableSubsystem;
 import frc.lib.subsystems.elevator.ElevatorIo.ElevatorInputs;
 
 public class Elevator extends LoggableSubsystem {
-    private ElevatorIo io;
+    private final ElevatorIo io;
     private double targetPosition;
+    private final double heightOffset;
 
-    public Elevator(String name, ElevatorIo io) {
+    public Elevator(String name, ElevatorIo io, double heightOffset) {
         super(name);
         this.io = io;
         targetPosition = 0.0;
+        this.heightOffset = heightOffset;
 
         addIo(io);
     }
 
     public void setTargetPosition(double pos) {
         targetPosition = pos;
-        System.out.println(targetPosition);
-        io.setTargetPosition(pos);
+        io.setTargetPosition(pos - heightOffset);
     }
 
-    public void changeTargetPosition(double diff){
-        setTargetPosition(io.getInputs().currentPosition + diff);
+    public void changeTargetPosition(double diff) {
+        setTargetPosition(io.getInputs().currentPosition + diff + heightOffset);
     }
 
-    public boolean isAtTargetPosition (double tolerance) {
+    public boolean isAtTargetPosition(double tolerance) {
         ElevatorInputs inputs = io.getInputs();
-        return Math.abs(inputs.currentPosition - targetPosition) < tolerance;
+        return Math.abs(inputs.currentPosition - targetPosition + heightOffset) < tolerance;
     }
 
     public void stop() {
         io.stop();
     }
 
-    public void goToZero(){
-        io.goToZero(); 
-        targetPosition = 0;  
+    public void goHome() {
+        io.goHome();
+        targetPosition = 0;
     }
-    public boolean isHome(){
+
+    public boolean isHome() {
         return io.getInputs().isHome;
     }
 }

@@ -31,7 +31,7 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
         setTargetPosition(currentPos);
     }
 
-    public void goToZero(){
+    public void goHome() {
         Logger.recordOutput(getOutputLogPath("TargetPosition"), 0);
     }
 }
