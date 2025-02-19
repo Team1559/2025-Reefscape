@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Inside_to1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "1-Processor"
+            "pathName": "Inside_Drive"
           }
         }
       ]
