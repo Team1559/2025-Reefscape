@@ -12,6 +12,7 @@ public class AlgaeIntake extends Intake {
     private static final int ANGLE_MOTOR_ID = 2; //TODO: change this to actual motor id
     private static final int ANGLE_ENCODER_ID = 2; //TODO: change this to real encoder id
     private static final Rotation2d ANGLE_ENCODER_OFFSET = new Rotation2d(); //TODO: put real angle encoder offset
+    private static final Rotation2d ANGLE_TOLERANCE = Rotation2d.fromDegrees(3);
 
     public AlgaeIntake() {
         super("AlgaeIntake", createIo());

@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
+import frc.robot.commands.IntakeAngleCommand;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Vision2025;
@@ -74,11 +75,11 @@ public class Robot extends LoggedRobot {
         coPilotController.leftBumper().or(coPilotController.leftTrigger())
                 .onFalse(new InstantCommand(coralIntake::stop, coralIntake));
 
-        coPilotController.povUp().onTrue(new InstantCommand(() -> algaeIntake.setAngle(new Rotation2d()), algaeIntake));
-        coPilotController.povDown().onTrue(new InstantCommand(() -> algaeIntake.setAngle(new Rotation2d()), algaeIntake));
+        coPilotController.povUp().onTrue(new IntakeAngleCommand(algaeIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
+        coPilotController.povDown().onTrue(new IntakeAngleCommand(algaeIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
         
-        coPilotController.povLeft().onTrue(new InstantCommand(() -> coralIntake.setAngle(new Rotation2d()), coralIntake));
-        coPilotController.povRight().onTrue(new InstantCommand(() -> coralIntake.setAngle(new Rotation2d()), coralIntake));
+        coPilotController.povLeft().onTrue(new IntakeAngleCommand(coralIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
+        coPilotController.povRight().onTrue(new IntakeAngleCommand(coralIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
         //TODO: ADD ANGLES FOR ALL ROTATION2D'S. PR (Pull Request)
     }
 
