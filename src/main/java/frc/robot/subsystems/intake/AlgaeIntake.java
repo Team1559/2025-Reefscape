@@ -17,6 +17,18 @@ public class AlgaeIntake extends Intake {
     public AlgaeIntake() {
         super("AlgaeIntake", createIo());
     }
+    public enum TargetAngle {
+        L1_ANGLE(Rotation2d.fromDegrees(30)),
+        L2_ANGLE(Rotation2d.fromDegrees(20)),
+        L3_ANGLE(Rotation2d.fromDegrees(50)),
+        L4_ANGLE(Rotation2d.fromDegrees(60)); // FIXME: put real angles in
+
+        public final Rotation2d angle;
+
+        TargetAngle(Rotation2d angle) {
+            this.angle = angle;
+        }
+    }
 
     private static IntakeIo createIo() {
         SparkMax rightIntakeMotor = new SparkMax(RIGHT_INTAKE_MOTOR_ID, MotorType.kBrushless);

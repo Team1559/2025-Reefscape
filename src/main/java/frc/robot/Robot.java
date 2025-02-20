@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import javax.tools.JavaCompiler.CompilationTask;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -13,21 +11,21 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
-import frc.robot.commands.IntakeAngleCommand;
+import frc.robot.commands.AlgaeIntakeAngleCommand;
+import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.subsystems.Drivetrain;
 import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Vision2025;
 import frc.robot.subsystems.intake.AlgaeIntake;
 import frc.robot.subsystems.intake.CoralIntake;
-import frc.robot.subsystems.intake.Intake;
 
 public class Robot extends LoggedRobot {
 
@@ -38,8 +36,8 @@ public class Robot extends LoggedRobot {
     private final Drivetrain drivetrain;
     private final Vision2025 vision;
     private final Elevator2025 elevator;
-    private final Intake coralIntake;
-    private final Intake algaeIntake;
+    private final CoralIntake coralIntake;
+    private final AlgaeIntake algaeIntake;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -65,22 +63,17 @@ public class Robot extends LoggedRobot {
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
 
-        coPilotController.rightTrigger().onTrue(new InstantCommand(() -> algaeIntake.run(false), algaeIntake));
-        coPilotController.rightBumper().onTrue(new InstantCommand(() -> algaeIntake.run(true), algaeIntake));
-        coPilotController.rightBumper().or(coPilotController.rightTrigger())
-                .onFalse(new InstantCommand(algaeIntake::stop, algaeIntake));
-
-        coPilotController.leftTrigger().onTrue(new InstantCommand(() -> coralIntake.run(false), coralIntake));
-        coPilotController.leftBumper().onTrue(new InstantCommand(() -> coralIntake.run(true), coralIntake));
-        coPilotController.leftBumper().or(coPilotController.leftTrigger())
-                .onFalse(new InstantCommand(coralIntake::stop, coralIntake));
-
-        coPilotController.povUp().onTrue(new IntakeAngleCommand(algaeIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
-        coPilotController.povDown().onTrue(new IntakeAngleCommand(algaeIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
+        coPilotController.rightTrigger().whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
+        coPilotController.rightBumper().whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
         
-        coPilotController.povLeft().onTrue(new IntakeAngleCommand(coralIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
-        coPilotController.povRight().onTrue(new IntakeAngleCommand(coralIntake, new Rotation2d(), Rotation2d.fromDegrees(3)));
-        //TODO: ADD ANGLES FOR ALL ROTATION2D'S. PR (Pull Request)
+        coPilotController.leftTrigger().whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
+        coPilotController.leftBumper().whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
+
+        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L1_ANGLE));
+        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L2_ANGLE));
+        
+        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L1_ANGLE));
+        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE));
     }
 
     @Override
