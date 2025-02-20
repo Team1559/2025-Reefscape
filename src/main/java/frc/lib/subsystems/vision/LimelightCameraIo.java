@@ -47,19 +47,17 @@ public class LimelightCameraIo extends VisionCameraIo {
             inputs.pose = estimate.pose;
             inputs.timestamp = estimate.timestampSeconds;
             inputs.hasPose = true;
-            
-            Pose3d posRelativeToCamera = LimelightHelpers.getTargetPose3d_CameraSpace(hostName);
-            double distance = posRelativeToCamera.getTranslation().getNorm();
+            double[] stddevs = LimelightHelpers.getLimelightNTDoubleArray(hostName, "stddevs");
             if (usingMegaTag2) {
                 // TODO: u pickin up what im puttin down? (Dont do small bc megatag 2 no good
                 // with yaw)
-                inputs.stdevRotation = MEGATAG2_STDEV_YAW;
-                inputs.stdevX = distance * MEGATAG2_STDEV_MULTIPLIER;
-                inputs.stdevY = distance * MEGATAG2_STDEV_MULTIPLIER;
+                inputs.stdevRotation = Rotation2d.fromDegrees(stddevs[11]);
+                inputs.stdevX = stddevs[6];
+                inputs.stdevY = stddevs[7];
             } else {
-                inputs.stdevRotation = Rotation2d.fromRadians(distance);
-                inputs.stdevX = distance;
-                inputs.stdevY = distance;
+                inputs.stdevRotation = Rotation2d.fromDegrees(stddevs[5]);
+                inputs.stdevX = stddevs[0];
+                inputs.stdevY = stddevs[1];
             }
         }
     }
