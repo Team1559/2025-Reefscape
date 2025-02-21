@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
@@ -65,12 +66,16 @@ public class Robot extends LoggedRobot {
                 () -> elevator.goHome(),
                 elevator);
 
+        Command climb = new StartEndCommand(climber::run, climber::stop, climber);
+
         pilotController.a().onTrue(levelOne);
         pilotController.b().onTrue(levelTwo);
         pilotController.x().onTrue(levelThree);
         pilotController.y().onTrue(levelFour);
         pilotController.povDown().onTrue(reset);
 
+        
+        pilotController.rightTrigger().whileTrue(climb);
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
     }
