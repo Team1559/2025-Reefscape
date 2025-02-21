@@ -11,7 +11,6 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -21,11 +20,12 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
-import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Elevator2025.IntakeOffset;
 import frc.robot.subsystems.Elevator2025.Level;
+import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Vision2025;
+import frc.robot.subsystems.climber.Climber2025;
 
 public class Robot extends LoggedRobot {
 
@@ -36,6 +36,7 @@ public class Robot extends LoggedRobot {
     private final SwerveDrive2025 drivetrain;
     private final Vision2025 vision;
     private final Elevator2025 elevator;
+    private final Climber2025 climber;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -49,6 +50,7 @@ public class Robot extends LoggedRobot {
         drivetrain = new SwerveDrive2025();
         vision = new Vision2025(drivetrain);
         elevator = new Elevator2025();
+        climber = new Climber2025();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
     }
