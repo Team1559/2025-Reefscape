@@ -1,7 +1,7 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.LoggableSubsystem;
+import frc.lib.subsystems.LoggableSubsystem;
 import frc.robot.subsystems.intake.IntakeIo.IntakeInputs;
 
 public class Intake extends LoggableSubsystem {
