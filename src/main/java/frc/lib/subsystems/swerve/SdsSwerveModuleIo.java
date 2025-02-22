@@ -16,14 +16,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 
-public class SdsMk4Module implements SwerveModuleIo {
+public class SdsSwerveModuleIo extends SwerveModuleIo {
 
     public enum ModuleType {
         MK4_L1(50d / 14 * 19 / 25 * 45 / 15, InvertedValue.CounterClockwise_Positive),
@@ -52,10 +51,7 @@ public class SdsMk4Module implements SwerveModuleIo {
     private final TalonFX driveMotor;
     private final CANcoder cancoder;
     private final Rotation2d cancoderOffset;
-    private final Translation2d location;
-    private final String name;
-    private double setSpeed;
-    private Rotation2d setAngle;
+
     private final StatusSignal<AngularVelocity> driveMotorVelocity;
     private final StatusSignal<Angle> canCoderAbsolutePosition;
     private final StatusSignal<Angle> driveMotorPosition;
@@ -64,18 +60,17 @@ public class SdsMk4Module implements SwerveModuleIo {
     private final StatusSignal<Current> steerMotorCurrent;
     private final StatusSignal<Current> driveMotorCurrent;
 
-    public SdsMk4Module(String name, Translation2d location, ModuleType moduleType, TalonFX steerMotor,
+    public SdsSwerveModuleIo(String name, Translation2d location, ModuleType moduleType, TalonFX steerMotor,
             Slot0Configs steerMotorPid,
             TalonFX driveMotor,
             Slot0Configs driveMotorPid, CANcoder cancoder,
             Rotation2d cancoderOffset) {
-        this.name = name;
+        super(name, location);
         this.steerMotor = steerMotor;
         this.driveMotor = driveMotor;
         this.cancoder = cancoder;
         this.driveGearRatio = moduleType;
         this.cancoderOffset = cancoderOffset;
-        this.location = location;
 
         steerMotor.getConfigurator().apply(new TalonFXConfiguration());
         steerMotor.getConfigurator().apply(new MotorOutputConfigs()
@@ -115,7 +110,6 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public void setSpeed(double speed) {
-        this.setSpeed = speed;
         VelocityVoltage control = new VelocityVoltage(
                 speed * (1 / (2 * WHEEL_RADIUS * Math.PI)) * driveGearRatio.driveRatio);
         driveMotor.setControl(control);
@@ -123,59 +117,46 @@ public class SdsMk4Module implements SwerveModuleIo {
 
     @Override
     public void setAngle(Rotation2d angle) {
-        this.setAngle = angle;
         PositionVoltage control = new PositionVoltage(angle.plus(cancoderOffset).getRotations());
         steerMotor.setControl(control);
     }
 
-    @Override
-    public Translation2d getLocation() {
-        return location;
-    }
-
-    @Override
-    public double getSpeed() {
+    private double getSpeed() {
         return driveMotorVelocity.getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
     }
 
-    @Override
-    public Rotation2d getAngle() {
+    private Rotation2d getAngle() {
         return Rotation2d.fromRotations(canCoderAbsolutePosition.getValueAsDouble()).minus(cancoderOffset);
     }
 
-    @Override
-    public double getDistanceTraveled() {
+    private double getDistanceTraveled() {
         return driveMotorPosition.getValueAsDouble() / driveGearRatio.driveRatio * (2 * WHEEL_RADIUS * Math.PI);
     }
 
-    @Override
-    public double getSteerMotorTemperature() {
+    private double getSteerMotorTemperature() {
         return steerMotorTemperature.getValueAsDouble();
     }
 
-    @Override
-    public double getDriveMotorTemperature() {
+    private double getDriveMotorTemperature() {
         return driveMotorTemperature.getValueAsDouble();
     }
 
-    @Override
-    public double getSteerMotorCurrent() {
+    private double getSteerMotorCurrent() {
         return steerMotorCurrent.getValueAsDouble();
     }
 
-    @Override
-    public double getDriveMotorCurrent() {
+    private double getDriveMotorCurrent() {
         return driveMotorCurrent.getValueAsDouble();
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected void updateInputs(SwerveInputs inputs) {
+        inputs.speed = getSpeed();
+        inputs.angle = getAngle();
+        inputs.distance = getDistanceTraveled();
+        inputs.steerMotorCurrent = getSteerMotorCurrent();
+        inputs.driveMotorCurrent = getDriveMotorCurrent();
+        inputs.steerMotorTemp = getSteerMotorTemperature();
+        inputs.driveMotorTemp = getDriveMotorTemperature();
     }
-
-    @Override
-    public SwerveModuleState getSetpoint() {
-        return new SwerveModuleState(setSpeed, setAngle);
-    }
-
 }

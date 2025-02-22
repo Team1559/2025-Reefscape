@@ -1,4 +1,4 @@
-package frc.lib;
+package frc.lib.subsystems;
 
 import java.util.HashSet;
 import java.util.Set;
