@@ -4,7 +4,7 @@ import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.LoggableSubsystem;
+import frc.lib.subsystems.LoggableSubsystem;
 import frc.lib.subsystems.vision.VisionCameraIo.VisionInputs;
 
 public class Vision extends LoggableSubsystem {

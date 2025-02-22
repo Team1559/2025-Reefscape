@@ -4,8 +4,11 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.geometry.Pose2d;
+
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.LoggableIo;
+
+import frc.lib.subsystems.LoggableIo;
+
 
 public class VisionCameraIo extends LoggableIo<VisionCameraIo.VisionInputs> {
     @AutoLog
@@ -20,10 +23,5 @@ public class VisionCameraIo extends LoggableIo<VisionCameraIo.VisionInputs> {
 
     public VisionCameraIo(String name) {
         super(name, new VisionInputsAutoLogged());
-    }
-
-    @Override
-    protected void updateInputs(VisionInputs inputs) {
-        throw new UnsupportedOperationException("Update Inputs");
     }
 }
