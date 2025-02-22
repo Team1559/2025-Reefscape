@@ -5,7 +5,7 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.LoggableIo;
+import frc.lib.subsystems.LoggableIo;
 
 public class IntakeIo extends LoggableIo<IntakeIo.IntakeInputs> {
     @AutoLog
