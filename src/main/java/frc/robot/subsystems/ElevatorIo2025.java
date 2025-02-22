@@ -21,7 +21,7 @@ public class ElevatorIo2025 extends ElevatorIo {
     private static final double MAX_HEIGHT = Units.inchesToMeters(55);
     private static final double MAX_VELOCITY = 4;
     private static final double MAX_ACCEL = 0.5;
-    private static final double GRAVITY_FEEDFORWARD = .0; // TODO: change this
+    private static final double GRAVITY_FEEDFORWARD = 1; // TODO: change this
     private static final int NUM_STAGES = 2;
 
     private final SparkFlex motor;
@@ -42,9 +42,10 @@ public class ElevatorIo2025 extends ElevatorIo {
         motorConfig.idleMode(IdleMode.kBrake);
         motorConfig.closedLoop.maxMotion.maxVelocity(heightToMotorRotations(MAX_VELOCITY) * 60);
         motorConfig.closedLoop.maxMotion.maxAcceleration(heightToMotorRotations(MAX_ACCEL) * 60);
-        motorConfig.closedLoop.pid(.2, 0, 0); // TODO: set these later
+        motorConfig.closedLoop.pid(0.4, 0, 0); // TODO: set these later
         motorConfig.inverted(false);
 
+        motorConfig.smartCurrentLimit(200, 200);//TODO: DONT SAVE THIS
         motorConfig.softLimit.forwardSoftLimit(heightToMotorRotations(MAX_HEIGHT));
         motorConfig.softLimit.forwardSoftLimitEnabled(true);
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -86,6 +87,6 @@ public class ElevatorIo2025 extends ElevatorIo {
     @Override
     public void goHome() {
         super.goHome();
-        motor.setVoltage(-12 * 0.05);
+        motor.setVoltage(-12 * 0.01);
     }
 }

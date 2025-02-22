@@ -28,6 +28,6 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
     }
 
     public void goHome() {
-        Logger.recordOutput(getOutputLogPath("TargetPosition"), 0);
+        Logger.recordOutput(getOutputLogPath("TargetPosition"), 0D);
     }
 }

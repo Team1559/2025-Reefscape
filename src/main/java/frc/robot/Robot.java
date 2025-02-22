@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -44,7 +45,7 @@ public class Robot extends LoggedRobot {
     private final Vision2025 vision;
     private final Elevator2025 elevator;
     private final CoralIntake coralIntake;
-    private final AlgaeIntake algaeIntake;
+    // private final AlgaeIntake algaeIntake;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -60,9 +61,11 @@ public class Robot extends LoggedRobot {
         vision = new Vision2025(drivetrain);
         elevator = new Elevator2025();
         coralIntake = new CoralIntake();
-        algaeIntake = new AlgaeIntake();
+        // algaeIntake = new AlgaeIntake();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
+
+        DriverStation.silenceJoystickConnectionWarning(true);
     }
 
     @Override
@@ -93,20 +96,21 @@ public class Robot extends LoggedRobot {
         coPilotController.x().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelThree);
         coPilotController.x().and(coPilotController.rightTrigger()).onTrue(algaeLevelThree);
 
-        coPilotController.y().onTrue(coralLevelFour);
+        // coPilotController.y().onTrue(coralLevelFour);
         coPilotController.povDown().onTrue(elevatorHome);
 
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
+        pilotController.a().onTrue(new InstantCommand(elevator::stop));//TODO: temp
 
-        coPilotController.rightTrigger().whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
-        coPilotController.rightBumper().whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
+        // coPilotController.rightTrigger().whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
+        // coPilotController.rightBumper().whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
         
         coPilotController.leftTrigger().whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
         coPilotController.leftBumper().whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
 
-        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L1_ANGLE));
-        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L2_ANGLE));
+        // coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L1_ANGLE));
+        // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L2_ANGLE));
         
         coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L1_ANGLE));
         coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE));

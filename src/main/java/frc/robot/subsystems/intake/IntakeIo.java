@@ -32,11 +32,4 @@ public class IntakeIo extends LoggableIo<IntakeIo.IntakeInputs> {
     public void stop() {
         Logger.recordOutput(getOutputLogPath("State"), "Stop");
     }
-
-    @Override
-    protected void updateInputs(IntakeInputs inputs) {
-        // TODO Auto-generated method chubub
-        throw new UnsupportedOperationException("Unimplemented method 'updateInputs'");
-    }
-
 }

@@ -8,10 +8,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 
 public class CoralIntake extends Intake {
-    private static final int INTAKE_MOTOR_ID = 2; // TODO: change this to actual motor id
-    private static final int ANGLE_MOTOR_ID = 2; // TODO: change this to actual motor id
-    private static final int ANGLE_ENCODER_ID = 2; // TODO: change this to real encoder id
-    private static final Rotation2d ANGLE_ENCODER_OFFSET = new Rotation2d(); // TODO: put real angle encoder offset
+    private static final int INTAKE_MOTOR_ID = 26; 
+    private static final int ANGLE_MOTOR_ID = 22;
+    private static final int ANGLE_ENCODER_ID = 27; 
+    private static final Rotation2d ANGLE_ENCODER_OFFSET = new Rotation2d();
 
     public CoralIntake() {
         super("CoralIntake", createIo());

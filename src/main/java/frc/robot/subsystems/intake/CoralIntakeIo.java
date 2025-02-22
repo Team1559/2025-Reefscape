@@ -1,5 +1,7 @@
 package frc.robot.subsystems.intake;
 
+import org.opencv.ml.StatModel;
+
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -14,25 +16,33 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 
 public class CoralIntakeIo extends IntakeIo {
-    private static final double INTAKE_MOTOR_RPM = 89; // TODO: Put actual motor rpm
-    private static final double INTAKE_MOTOR_ACCEL = 89; // TODO: Put actual motor accel
-    private static final double GEAR_RATIO = 25;
-    private static final double INTAKE_MASS = 89; // FIXME
-    private static final double RADIUS_TO_COM = 89; // FIXME
-    private static final double GRAVITY_ACCEL = 9.8; // FIXME
+    private static final double INTAKE_MASS = Units.lbsToKilograms(7);
+    private static final double RADIUS_TO_COM = Units.inchesToMeters(4.3);
+    private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
-    private static final double ANGLE_MOTOR_ACCEL = 89; // TODO: Put actual motor accel
-    private static final double MAX_ANGLE_MOTOR_RPM = 89; // TODO: Put actual motor rpm
+
+    private static final double INTAKE_MOTOR_GEAR_RATIO = 25;
+    private static final double INTAKE_MOTOR_RPM = 120 * INTAKE_MOTOR_GEAR_RATIO; //2 rev/s mechanism
+    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .5;// 0.5s 
+
+    private static final double ANGLE_GEAR_RATIO = 25;
+    private static final double MAX_ANGLE_MOTOR_RPM = 60 * ANGLE_GEAR_RATIO;
+    private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
+    
     private final SparkFlex intakeMotor;
     private final SparkFlex angleMotor;
     private final CANcoder angleEncoder;
-    private final StatusSignal<Angle> absolutePosition;
-    private final Rotation2d angleEncoderOffset;
+    
     private final SparkClosedLoopController intakeMotorController;
     private final SparkClosedLoopController angleMotorController;
+    
+    private final Rotation2d angleEncoderOffset;
+    
+    private final StatusSignal<Angle> absolutePosition;
     private Rotation2d targetAngle;
 
     public CoralIntakeIo(String name, SparkFlex intakeMotor, SparkFlex angleMotor, CANcoder angleEncoder,
@@ -64,7 +74,7 @@ public class CoralIntakeIo extends IntakeIo {
         angleMotorConfig.closedLoop.pid(0, 0, 0); // TODO: set these later
         angleMotorConfig.inverted(false);
         angleMotor.configure(angleMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        angleMotor.getEncoder().setPosition(getCurrentAngle().getRotations() * GEAR_RATIO);
+        angleMotor.getEncoder().setPosition(getCurrentAngle().getRotations() * ANGLE_GEAR_RATIO);
     }
 
     @Override
@@ -92,7 +102,7 @@ public class CoralIntakeIo extends IntakeIo {
     }
 
     public double gravityFeedForward(Rotation2d angle) {
-        return angle.getCos() * GRAVITY_ACCEL * INTAKE_MASS * RADIUS_TO_COM / GEAR_RATIO / MOTOR_STALL_TORQUE;
+        return angle.getCos() * GRAVITY_ACCEL * INTAKE_MASS * RADIUS_TO_COM / ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE;
     }
 
     @Override
@@ -107,7 +117,7 @@ public class CoralIntakeIo extends IntakeIo {
     }
 
     public double angleToMotorRotations(Rotation2d targetAngle) {
-        return targetAngle.getRotations() * GEAR_RATIO;
+        return targetAngle.getRotations() * ANGLE_GEAR_RATIO;
     }
 
     public Rotation2d getCurrentAngle() {
