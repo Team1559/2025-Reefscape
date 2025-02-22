@@ -7,25 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "test "
+            "pathName": "Square_1 "
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of New Path"
+            "pathName": "Square_2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of Copy of New Path"
+            "pathName": "Square_3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Copy of Copy of Copy of New Path"
+            "pathName": "Square_4"
           }
         }
       ]

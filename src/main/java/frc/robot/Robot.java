@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -53,7 +54,7 @@ public class Robot extends LoggedRobot {
 
         pilotController = new CommandXboxController(0);
         coPilotController = new CommandXboxController(1);
-        
+
         drivetrain = new SwerveDrive2025();
       
         vision = new Vision2025(drivetrain);
@@ -66,19 +67,34 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        Command levelOne = new ElevatorHeightCommand2025(elevator, Level.L1, IntakeOffset.CORAL);
-        Command levelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.CORAL);
-        Command levelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.CORAL);
-        Command levelFour = new ElevatorHeightCommand2025(elevator, Level.L4, IntakeOffset.CORAL);
-        Command reset = new InstantCommand(
+        Command coralLevelOne = new ElevatorHeightCommand2025(elevator, Level.L1, IntakeOffset.CORAL);
+        Command coralLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.CORAL);
+        Command coralLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.CORAL);
+        Command coralLevelFour = new ElevatorHeightCommand2025(elevator, Level.L4, IntakeOffset.CORAL);
+
+        Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.ALGAE);
+        Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.ALGAE);
+
+        Command elevatorHome = new InstantCommand(
                 () -> elevator.goHome(),
                 elevator);
 
-        pilotController.a().onTrue(levelOne);
-        pilotController.b().onTrue(levelTwo);
-        pilotController.x().onTrue(levelThree);
-        pilotController.y().onTrue(levelFour);
-        pilotController.povDown().onTrue(reset);
+        NamedCommands.registerCommand("coralLevelOne", coralLevelOne);
+        NamedCommands.registerCommand("coralLevelTwo", coralLevelTwo);
+        NamedCommands.registerCommand("coralLevelThree", coralLevelThree);
+        NamedCommands.registerCommand("coralLevelFour", coralLevelFour);
+        NamedCommands.registerCommand("algaeLevelTwo", algaeLevelTwo);
+        NamedCommands.registerCommand("algaeLevelThree", algaeLevelThree);
+        NamedCommands.registerCommand("elevatorHome", elevatorHome);
+
+        coPilotController.a().onTrue(coralLevelOne);
+        coPilotController.b().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelTwo);
+        coPilotController.b().and(coPilotController.rightTrigger()).onTrue(algaeLevelTwo);
+        coPilotController.x().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelThree);
+        coPilotController.x().and(coPilotController.rightTrigger()).onTrue(algaeLevelThree);
+
+        coPilotController.y().onTrue(coralLevelFour);
+        coPilotController.povDown().onTrue(elevatorHome);
 
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, 5.21, 1.925, drivetrain));
