@@ -1,5 +1,7 @@
 package frc.robot.subsystems.intake;
 
+import java.util.prefs.BackingStoreException;
+
 import org.opencv.ml.StatModel;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -24,14 +26,18 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double RADIUS_TO_COM = Units.inchesToMeters(4.3);
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
+    private static final double BATTERY_VOLTAGE = 12;
+    
+    private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
 
     private static final double INTAKE_MOTOR_GEAR_RATIO = 25;
     private static final double INTAKE_MOTOR_RPM = 120 * INTAKE_MOTOR_GEAR_RATIO; //2 rev/s mechanism
     private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .5;// 0.5s 
 
     private static final double ANGLE_GEAR_RATIO = 25;
-    private static final double MAX_ANGLE_MOTOR_RPM = 60 * ANGLE_GEAR_RATIO;
-    private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
+    private static final double MAX_ANGLE_MOTOR_RPM = 12 * ANGLE_GEAR_RATIO;
+    private static final double 
+    ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
     
     private final SparkFlex intakeMotor;
     private final SparkFlex angleMotor;
@@ -71,8 +77,8 @@ public class CoralIntakeIo extends IntakeIo {
         angleMotorConfig.idleMode(IdleMode.kBrake);
         angleMotorConfig.closedLoop.maxMotion.maxAcceleration(ANGLE_MOTOR_ACCEL);
         angleMotorConfig.closedLoop.maxMotion.maxVelocity(MAX_ANGLE_MOTOR_RPM);
-        angleMotorConfig.closedLoop.pid(0, 0, 0); // TODO: set these later
-        angleMotorConfig.inverted(false);
+        angleMotorConfig.closedLoop.pid(.16, 0, 0); // TODO: set these later
+        angleMotorConfig.inverted(true);
         angleMotor.configure(angleMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         angleMotor.getEncoder().setPosition(getCurrentAngle().getRotations() * ANGLE_GEAR_RATIO);
     }
@@ -80,6 +86,8 @@ public class CoralIntakeIo extends IntakeIo {
     @Override
     protected void updateInputs(IntakeInputs inputs) {
         inputs.currentAngle = getCurrentAngle();
+        inputs.angleMotorCurrent = angleMotor.getOutputCurrent();
+        inputs.currentAngleFromMotor = motorRotationsToAngle(angleMotor.getEncoder().getPosition());
     }
 
     @Override
@@ -102,7 +110,7 @@ public class CoralIntakeIo extends IntakeIo {
     }
 
     public double gravityFeedForward(Rotation2d angle) {
-        return angle.getCos() * GRAVITY_ACCEL * INTAKE_MASS * RADIUS_TO_COM / ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE;
+        return angle.getCos() * GRAVITY_ACCEL * MOMENT_OF_INERTIA/ ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE * BATTERY_VOLTAGE;// Upper limit : 1
     }
 
     @Override
@@ -111,8 +119,8 @@ public class CoralIntakeIo extends IntakeIo {
         if (targetAngle == null) {
             angleMotor.stopMotor();
         } else {
-            angleMotorController.setReference(0, ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0,
-                    gravityFeedForward(targetAngle));
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0,
+                    gravityFeedForward(getInputs().currentAngle));
         }
     }
 
@@ -120,7 +128,12 @@ public class CoralIntakeIo extends IntakeIo {
         return targetAngle.getRotations() * ANGLE_GEAR_RATIO;
     }
 
-    public Rotation2d getCurrentAngle() {
-        return Rotation2d.fromDegrees(absolutePosition.getValueAsDouble()).minus(angleEncoderOffset);
+    public Rotation2d motorRotationsToAngle(double rotations){
+        return Rotation2d.fromRotations(rotations/ANGLE_GEAR_RATIO);
+    }
+
+    private Rotation2d getCurrentAngle() {
+        absolutePosition.refresh();
+        return Rotation2d.fromRotations(absolutePosition.getValueAsDouble()).minus(angleEncoderOffset);
     }
 }

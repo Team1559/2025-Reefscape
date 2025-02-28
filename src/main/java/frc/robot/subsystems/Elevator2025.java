@@ -8,33 +8,25 @@ import frc.lib.subsystems.elevator.Elevator;
 
 public class Elevator2025 extends Elevator {
     private static final int MOTOR_ID = 21;
-    private static final double HEIGHT_OFFSET = Units.inchesToMeters(35);
 
     public Elevator2025() {
-        super("Elevator", new ElevatorIo2025("IO", new SparkFlex(MOTOR_ID, MotorType.kBrushless)), HEIGHT_OFFSET);
-    }
-
-    public enum IntakeOffset {
-        ALGAE(Units.inchesToMeters(18)), 
-        CORAL(Units.inchesToMeters(18));
-
-        public final double heightOffset;
-
-        IntakeOffset(double heightOffset) {
-            this.heightOffset = heightOffset;
-        }
+        super("Elevator", new ElevatorIo2025("IO", new SparkFlex(MOTOR_ID, MotorType.kBrushless)));
     }
 
     public enum Level {
-        L1(Units.inchesToMeters(18)),
-        L2(Units.inchesToMeters(31.875)),
-        L3(Units.inchesToMeters(41.625)),
-        L4(Units.inchesToMeters(72));
+        L1_CORAL(0),
+        L2_CORAL(.16),
+        L3_CORAL(.55),
+        L4_CORAL(1.397),
+        //TODO: real numbers
+        L2_ALGAE(1.36/2),
+        L3_ALGAE(1.36*(3/4d));
+        // TODO: Fix values
 
-        public final double heightOffset;
+        public final double height;
 
         Level(double heightOffset) {
-            this.heightOffset = heightOffset;
+            this.height = heightOffset;
         }
     }
 }

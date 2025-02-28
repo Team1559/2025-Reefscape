@@ -11,6 +11,9 @@ public class IntakeIo extends LoggableIo<IntakeIo.IntakeInputs> {
     @AutoLog
     public static abstract class IntakeInputs implements LoggableInputs {
         public Rotation2d currentAngle;
+        public Rotation2d currentAngleFromMotor;
+        public double angleMotorCurrent;
+        
     }
 
     public IntakeIo(String name) {

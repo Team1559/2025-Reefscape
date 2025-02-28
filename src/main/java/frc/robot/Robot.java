@@ -28,7 +28,6 @@ import frc.robot.commands.AlgaeIntakeAngleCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
 import frc.robot.subsystems.Elevator2025;
-import frc.robot.subsystems.Elevator2025.IntakeOffset;
 import frc.robot.subsystems.Elevator2025.Level;
 import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Vision2025;
@@ -51,7 +50,7 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
-        Logger.recordOutput("hi/test", ":)"); // Leave as easter eggg
+        Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
 
         pilotController = new CommandXboxController(0);
         coPilotController = new CommandXboxController(1);
@@ -70,13 +69,13 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        Command coralLevelOne = new ElevatorHeightCommand2025(elevator, Level.L1, IntakeOffset.CORAL);
-        Command coralLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.CORAL);
-        Command coralLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.CORAL);
-        Command coralLevelFour = new ElevatorHeightCommand2025(elevator, Level.L4, IntakeOffset.CORAL);
+        Command coralLevelOne = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
+        Command coralLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
+        Command coralLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
+        Command coralLevelFour = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
 
-        Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2, IntakeOffset.ALGAE);
-        Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3, IntakeOffset.ALGAE);
+        Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_ALGAE);
+        Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_ALGAE);
 
         Command elevatorHome = new InstantCommand(
                 () -> elevator.goHome(),
@@ -96,7 +95,7 @@ public class Robot extends LoggedRobot {
         coPilotController.x().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelThree);
         coPilotController.x().and(coPilotController.rightTrigger()).onTrue(algaeLevelThree);
 
-        // coPilotController.y().onTrue(coralLevelFour);
+        coPilotController.y().onTrue(coralLevelFour);
         coPilotController.povDown().onTrue(elevatorHome);
 
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,

@@ -12,6 +12,7 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
         public boolean isHome;
         public double currentPosition;
         public double motorCurrent;
+        public double currentVelocity;
     }
 
     public ElevatorIo(String name) {

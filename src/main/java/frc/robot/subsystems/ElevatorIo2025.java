@@ -19,9 +19,9 @@ public class ElevatorIo2025 extends ElevatorIo {
     private static final int GEAR_TEETH = 13;
     private static final double RACK_SPACING = Units.inchesToMeters(3D / 8D);
     private static final double MAX_HEIGHT = Units.inchesToMeters(55);
-    private static final double MAX_VELOCITY = 4;
-    private static final double MAX_ACCEL = 0.5;
-    private static final double GRAVITY_FEEDFORWARD = 1; // TODO: change this
+    private static final double MAX_VELOCITY = 1;
+    private static final double MAX_ACCEL = MAX_VELOCITY/.5;
+    private static final double GRAVITY_FEEDFORWARD =.9;//Upper bound: 1.5 Lower bound: .3 
     private static final int NUM_STAGES = 2;
 
     private final SparkFlex motor;
@@ -56,6 +56,7 @@ public class ElevatorIo2025 extends ElevatorIo {
         inputs.isHome = limitSwitch.isPressed();
         inputs.currentPosition = motorRotationsToHeight(encoder.getPosition());
         inputs.motorCurrent = motor.getOutputCurrent();
+        inputs.currentVelocity = motorRotationsToHeight(encoder.getVelocity())/60;
     }
 
     @Override
