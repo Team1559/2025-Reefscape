@@ -15,10 +15,10 @@ public class Elevator2025 extends Elevator {
 
     public enum Level {
         L1_CORAL(0),
-        L2_CORAL(.16),
-        L3_CORAL(.55),
-        L4_CORAL(1.397),
-        //TODO: real numbers
+        L2_CORAL(.153),
+        L3_CORAL(.578),
+        L4_CORAL(1.374),
+        
         L2_ALGAE(1.36/2),
         L3_ALGAE(1.36*(3/4d));
         // TODO: Fix values

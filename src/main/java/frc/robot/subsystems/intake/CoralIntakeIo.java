@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import java.util.prefs.BackingStoreException;
 
+import org.littletonrobotics.junction.Logger;
 import org.opencv.ml.StatModel;
 
 import com.ctre.phoenix6.StatusSignal;
@@ -27,17 +28,17 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
     private static final double BATTERY_VOLTAGE = 12;
+    private static final double INTAKE_MOTOR_VOLTAGE = 3;
     
     private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
 
-    private static final double INTAKE_MOTOR_GEAR_RATIO = 25;
-    private static final double INTAKE_MOTOR_RPM = 120 * INTAKE_MOTOR_GEAR_RATIO; //2 rev/s mechanism
-    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .5;// 0.5s 
+    private static final double INTAKE_MOTOR_GEAR_RATIO = 72d/50;
+    private static final double INTAKE_MOTOR_RPM = 250d/3 * INTAKE_MOTOR_GEAR_RATIO; //2 rev/s mechanism
+    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .1;// 0.5s 
 
     private static final double ANGLE_GEAR_RATIO = 25;
     private static final double MAX_ANGLE_MOTOR_RPM = 12 * ANGLE_GEAR_RATIO;
-    private static final double 
-    ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
+    private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
     
     private final SparkFlex intakeMotor;
     private final SparkFlex angleMotor;
@@ -65,7 +66,7 @@ public class CoralIntakeIo extends IntakeIo {
         SparkFlexConfig intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig.idleMode(IdleMode.kBrake);
         intakeMotorConfig.closedLoop.maxMotion.maxAcceleration(INTAKE_MOTOR_ACCEL);
-        intakeMotorConfig.closedLoop.pid(0, 0, 0); // TODO: set these later
+        intakeMotorConfig.closedLoop.pid(.008, 0, 0); // TODO: set these later
         intakeMotorConfig.inverted(false);
         intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -88,13 +89,18 @@ public class CoralIntakeIo extends IntakeIo {
         inputs.currentAngle = getCurrentAngle();
         inputs.angleMotorCurrent = angleMotor.getOutputCurrent();
         inputs.currentAngleFromMotor = motorRotationsToAngle(angleMotor.getEncoder().getPosition());
+
+        inputs.intakeVelocity = intakeMotor.getEncoder().getVelocity();
+        inputs.intakeCurrent = intakeMotor.getOutputCurrent();
     }
 
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        double velocity = forward ? INTAKE_MOTOR_RPM : -INTAKE_MOTOR_RPM;
-        intakeMotorController.setReference(velocity, ControlType.kMAXMotionVelocityControl);
+        // double velocity = forward ? INTAKE_MOTOR_RPM : -INTAKE_MOTOR_RPM;
+        // Logger.recordOutput(getOutputLogPath("TargetVelocity"), velocity);
+        double voltage = forward ? INTAKE_MOTOR_VOLTAGE: -INTAKE_MOTOR_VOLTAGE;
+        intakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
 
     @Override

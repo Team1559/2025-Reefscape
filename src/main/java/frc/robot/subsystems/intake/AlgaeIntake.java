@@ -11,15 +11,15 @@ public class AlgaeIntake extends Intake {
     private static final int RIGHT_INTAKE_MOTOR_ID = 25;
     private static final int ANGLE_MOTOR_ID = 24; 
     private static final int ANGLE_ENCODER_ID = 28;
-    private static final Rotation2d ANGLE_ENCODER_OFFSET = new Rotation2d(); //TODO: put real angle encoder offset
+    private static final Rotation2d ANGLE_ENCODER_OFFSET = Rotation2d.fromRadians(2.85); //TODO: put real angle encoder offset
     private static final Rotation2d ANGLE_TOLERANCE = Rotation2d.fromDegrees(3);
 
     public AlgaeIntake() {
         super("AlgaeIntake", createIo());
     }
     public enum TargetAngle {
-        L1_ANGLE(Rotation2d.fromDegrees(30)),
-        L2_ANGLE(Rotation2d.fromDegrees(20)),
+        L1_ANGLE(Rotation2d.fromDegrees(0)),
+        L2_ANGLE(Rotation2d.fromRadians(-1.54)),
         L3_ANGLE(Rotation2d.fromDegrees(50)),
         L4_ANGLE(Rotation2d.fromDegrees(60)); // FIXME: put real angles in
 

@@ -14,6 +14,8 @@ public class IntakeIo extends LoggableIo<IntakeIo.IntakeInputs> {
         public Rotation2d currentAngleFromMotor;
         public double angleMotorCurrent;
         
+        public double intakeVelocity;
+        public double intakeCurrent;
     }
 
     public IntakeIo(String name) {

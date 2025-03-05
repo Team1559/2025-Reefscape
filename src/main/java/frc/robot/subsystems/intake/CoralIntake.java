@@ -19,10 +19,11 @@ public class CoralIntake extends Intake {
 
     public enum TargetAngle {
         L1_ANGLE(Rotation2d.fromRadians(-.574)),
-        L2_ANGLE(Rotation2d.fromRadians(-.659)),
-        L3_ANGLE(Rotation2d.fromRadians(-.659)),
-        L4_ANGLE(Rotation2d.fromRadians(-1.011)); // FIXME: put real angles in
-
+        L2_ANGLE(Rotation2d.fromRadians(-.593)),
+        L3_ANGLE(Rotation2d.fromRadians(-.593)),
+        L4_ANGLE(Rotation2d.fromRadians(-.94)),
+        
+        SOURCE_ANGLE(Rotation2d.fromRadians(.362));
         public final Rotation2d angle;
 
         TargetAngle(Rotation2d angle) {
