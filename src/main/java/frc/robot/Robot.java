@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -21,11 +19,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.AlgaeIntakeAngleCommand;
-import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
 import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Elevator2025.Level;
@@ -46,6 +44,9 @@ public class Robot extends LoggedRobot {
     private final CoralIntake coralIntake;
     private final AlgaeIntake algaeIntake;
 
+    private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
+    private static final double SWERVE_MAX_ANGULAR_VELOCITY = 1.925;
+
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
@@ -65,6 +66,43 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putData(autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
+    }
+
+    public void clearControllers(){
+        CommandScheduler.getInstance().getActiveButtonLoop().clear();
+    }
+
+    public void setTeleopBindings(){
+        drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
+                pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
+    }
+
+    public void setTestBindings(){
+        coPilotController.a().onTrue(NamedCommands.getCommand("coralLevelOne"));
+        coPilotController.b().and(coPilotController.rightTrigger().negate()).onTrue(NamedCommands.getCommand("coralLevelTwo"));
+        coPilotController.b().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("algaeLevelTwo"));
+        coPilotController.x().and(coPilotController.rightTrigger().negate()).onTrue(NamedCommands.getCommand(("coralLevelThree")));
+        coPilotController.x().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("coralLevelFour"));
+
+        coPilotController.y().onTrue(NamedCommands.getCommand("coralLevelFour"));
+        // coPilotController.povDown().onTrue(manualElevatorUp);//.onTrue(elevatorHome);
+
+        drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
+                pilotController::getRightX, 5.21, 1.925, drivetrain));
+        pilotController.a().onTrue(new InstantCommand(elevator::stop));//TODO: temp
+
+        coPilotController.rightTrigger().whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
+        coPilotController.rightBumper().whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
+        
+        coPilotController.leftTrigger().whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
+        coPilotController.leftBumper().whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
+
+        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
+        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
+        
+        // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE));
+        // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L4_ANGLE));
+        // coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.SOURCE_ANGLE));
     }
 
     @Override
@@ -91,38 +129,11 @@ public class Robot extends LoggedRobot {
         NamedCommands.registerCommand("algaeLevelTwo", algaeLevelTwo);
         NamedCommands.registerCommand("algaeLevelThree", algaeLevelThree);
         NamedCommands.registerCommand("elevatorHome", elevatorHome);
-
-        coPilotController.a().onTrue(coralLevelOne);
-        coPilotController.b().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelTwo);
-        coPilotController.b().and(coPilotController.rightTrigger()).onTrue(algaeLevelTwo);
-        coPilotController.x().and(coPilotController.rightTrigger().negate()).onTrue(coralLevelThree);
-        coPilotController.x().and(coPilotController.rightTrigger()).onTrue(algaeLevelThree);
-
-        coPilotController.y().onTrue(coralLevelFour);
-        // coPilotController.povDown().onTrue(manualElevatorUp);//.onTrue(elevatorHome);
-
-        drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
-                pilotController::getRightX, 5.21, 1.925, drivetrain));
-        pilotController.a().onTrue(new InstantCommand(elevator::stop));//TODO: temp
-
-        coPilotController.rightTrigger().whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
-        coPilotController.rightBumper().whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
-        
-        coPilotController.leftTrigger().whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
-        coPilotController.leftBumper().whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
-
-        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
-        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
-        
-        // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE));
-        // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L4_ANGLE));
-        // coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.SOURCE_ANGLE));
     }
 
     @Override
     public void robotPeriodic() {
         CommandScheduler.getInstance().run();
-
     }
 
     @Override
@@ -142,6 +153,8 @@ public class Robot extends LoggedRobot {
         }, elevator::isHome, elevator);
         CommandScheduler.getInstance().schedule(goToZero);
 
+        clearControllers();
+        setTeleopBindings();
     }
 
     @Override
@@ -154,6 +167,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void testInit() {
+        clearControllers();
+        setTestBindings();
     }
 
     @Override
