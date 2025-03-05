@@ -16,7 +16,6 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
-import pabeles.concurrency.IntOperatorTask.Max;
 
 public class AlgaeIntakeIo extends IntakeIo {
     
@@ -32,9 +31,10 @@ public class AlgaeIntakeIo extends IntakeIo {
     private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM/.5;
     
     private static final double INTAKE_GEAR_RATIO = 50;
-    private static final double INTAKE_MOTOR_RPM = 120 * 50; // TODO: Put actual motor rpm
-    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM/.1; // TODO: Put actual motor accel
-
+    private static final double INTAKE_MOTOR_RPM = 120 * INTAKE_GEAR_RATIO;
+    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM/.1;
+    private static final double INTAKE_MOTOR_MAX_RPM = 11000;
+    private static final double INTAKE_MOTOR_VOLTAGE = INTAKE_MOTOR_RPM / INTAKE_MOTOR_MAX_RPM * BATTERY_VOLTAGE;
     private final SparkMax rightIntakeMotor;
     private final SparkMax leftIntakeMotor;
     private final SparkMax angleMotor;
@@ -63,7 +63,6 @@ public class AlgaeIntakeIo extends IntakeIo {
         SparkMaxConfig leftIntakeMotorConfig = new SparkMaxConfig();
         leftIntakeMotorConfig.idleMode(IdleMode.kBrake);
         leftIntakeMotorConfig.closedLoop.maxMotion.maxAcceleration(INTAKE_MOTOR_ACCEL);
-        leftIntakeMotorConfig.closedLoop.pid(0, 0, 0); // TODO: set these later
         leftIntakeMotorConfig.inverted(false);
         leftIntakeMotor.configure(leftIntakeMotorConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
@@ -96,10 +95,7 @@ public class AlgaeIntakeIo extends IntakeIo {
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        // double velocity = forward ? INTAKE_MOTOR_RPM : -INTAKE_MOTOR_RPM;
-        double voltage = forward ? 3:-3;
-        // rightIntakeMotorController.setReference(velocity, ControlType.kMAXMotionVelocityControl);
-        // leftIntakeMotorController.setReference(velocity, ControlType.kMAXMotionVelocityControl);
+        double voltage = forward ? INTAKE_MOTOR_VOLTAGE:-INTAKE_MOTOR_VOLTAGE;
         rightIntakeMotorController.setReference(voltage, ControlType.kVoltage);
         leftIntakeMotorController.setReference(voltage, ControlType.kVoltage);
     }

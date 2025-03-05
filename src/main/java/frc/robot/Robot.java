@@ -111,8 +111,8 @@ public class Robot extends LoggedRobot {
         coPilotController.leftTrigger().whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
         coPilotController.leftBumper().whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
 
-        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L1_ANGLE));
-        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.L2_ANGLE));
+        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
+        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
         
         // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE));
         // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L4_ANGLE));

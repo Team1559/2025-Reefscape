@@ -5,7 +5,6 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.Angle;
 
 public class CoralIntake extends Intake {
     private static final int INTAKE_MOTOR_ID = 26; 

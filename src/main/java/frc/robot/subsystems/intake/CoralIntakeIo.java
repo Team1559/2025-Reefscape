@@ -66,7 +66,6 @@ public class CoralIntakeIo extends IntakeIo {
         SparkFlexConfig intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig.idleMode(IdleMode.kBrake);
         intakeMotorConfig.closedLoop.maxMotion.maxAcceleration(INTAKE_MOTOR_ACCEL);
-        intakeMotorConfig.closedLoop.pid(.008, 0, 0); // TODO: set these later
         intakeMotorConfig.inverted(false);
         intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -97,8 +96,6 @@ public class CoralIntakeIo extends IntakeIo {
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        // double velocity = forward ? INTAKE_MOTOR_RPM : -INTAKE_MOTOR_RPM;
-        // Logger.recordOutput(getOutputLogPath("TargetVelocity"), velocity);
         double voltage = forward ? INTAKE_MOTOR_VOLTAGE: -INTAKE_MOTOR_VOLTAGE;
         intakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
@@ -116,7 +113,7 @@ public class CoralIntakeIo extends IntakeIo {
     }
 
     public double gravityFeedForward(Rotation2d angle) {
-        return angle.getCos() * GRAVITY_ACCEL * MOMENT_OF_INERTIA/ ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE * BATTERY_VOLTAGE;// Upper limit : 1
+        return angle.getCos() * GRAVITY_ACCEL * MOMENT_OF_INERTIA/ ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE * BATTERY_VOLTAGE;
     }
 
     @Override
