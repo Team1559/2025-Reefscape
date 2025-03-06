@@ -14,6 +14,7 @@ public class Elevator2025 extends Elevator {
     }
 
     public enum Level {
+        FEEDER(0),
         L1_CORAL(0),
         L2_CORAL(.153),
         L3_CORAL(.578),

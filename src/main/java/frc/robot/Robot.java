@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.jar.Attributes.Name;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -79,23 +81,33 @@ public class Robot extends LoggedRobot {
         Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
         Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
         Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
+        Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
+
         NamedCommands.registerCommand("elevatorL1", elevatorL1);
         NamedCommands.registerCommand("elevatorL2", elevatorL2);
         NamedCommands.registerCommand("elevatorL3", elevatorL3);
         NamedCommands.registerCommand("elevatorL4", elevatorL4);
+        NamedCommands.registerCommand("elevatorFeeder", elevatorFeeder);
 
         Command coralAngleFeeder = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.SOURCE_ANGLE);
         Command coralAngleL2 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
         Command coralAngleL3 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
         Command coralAngleL4 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
+
+        NamedCommands.registerCommand("coralAngleFeeder", coralAngleFeeder);
+        NamedCommands.registerCommand("coralAngleL2", coralAngleL2);
+        NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
+        NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
         
         Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_ALGAE);
         Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_ALGAE);
+
         NamedCommands.registerCommand("algaeLevel2", algaeLevelTwo);
         NamedCommands.registerCommand("algaeLevel3", algaeLevelThree);
 
         Command stowAlgae = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED);
 
+        Command coralAlignFeeder = new SequentialCommandGroup(stowAlgae, elevatorFeeder, coralAngleFeeder);
         Command coralAlignL2 = new SequentialCommandGroup(stowAlgae, elevatorL2, coralAngleL2);
         Command coralAlignL3 = new SequentialCommandGroup(stowAlgae, elevatorL3, coralAngleL3);
         Command coralAlignL4 = new SequentialCommandGroup(stowAlgae, elevatorL4, coralAngleL4);
@@ -107,6 +119,8 @@ public class Robot extends LoggedRobot {
         Command coralIn = new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake);
         Command coralOut = new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake);
         // TODO: verify in/out
+        NamedCommands.registerCommand("coralIn", coralIn);
+        NamedCommands.registerCommand("coralOut", coralOut);
 
         Command elevatorHome = new InstantCommand(
                 () -> elevator.goHome(),
@@ -116,19 +130,19 @@ public class Robot extends LoggedRobot {
         Command manualElevatorUp = new InstantCommand(
                 () -> elevator.changeTargetPosition(.005), elevator);
         NamedCommands.registerCommand("manualElevatorUp", manualElevatorUp);
-
-
     }
 
     public void setTeleopBindings(){
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
 
+        coPilotController.a().onTrue(NamedCommands.getCommand("coralAlignFeeder"));
         coPilotController.b().onTrue(NamedCommands.getCommand("coralAlignL2"));
         coPilotController.x().onTrue(NamedCommands.getCommand("coralAlignL3"));
         coPilotController.y().onTrue(NamedCommands.getCommand("coralAlignL4"));
 
-        coPilotController.rightBumper();
+        coPilotController.rightBumper().whileTrue(NamedCommands.getCommand("coralIn"));
+        coPilotController.rightTrigger().whileTrue(NamedCommands.getCommand("coralOut"));
         
     }
 
