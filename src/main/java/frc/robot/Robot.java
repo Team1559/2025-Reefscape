@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.jar.Attributes.Name;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -21,7 +19,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -33,6 +30,7 @@ import frc.robot.subsystems.Elevator2025;
 import frc.robot.subsystems.Elevator2025.Level;
 import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Vision2025;
+import frc.robot.subsystems.climber.Climber2025;
 import frc.robot.subsystems.intake.AlgaeIntake;
 import frc.robot.subsystems.intake.CoralIntake;
 
@@ -50,6 +48,7 @@ public class Robot extends LoggedRobot {
 
     private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
     private static final double SWERVE_MAX_ANGULAR_VELOCITY = 1.925;
+    private final Climber2025 climber;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -66,6 +65,7 @@ public class Robot extends LoggedRobot {
         elevator = new Elevator2025();
         coralIntake = new CoralIntake();
         algaeIntake = new AlgaeIntake();
+        climber = new Climber2025();
         autoChooser = AutoBuilder.buildAutoChooser();
         SmartDashboard.putData(autoChooser);
 
@@ -107,17 +107,20 @@ public class Robot extends LoggedRobot {
 
         Command stowAlgae = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED);
 
-        Command coralAlignFeeder = new SequentialCommandGroup(stowAlgae, elevatorFeeder, coralAngleFeeder);
-        Command coralAlignL2 = new SequentialCommandGroup(stowAlgae, elevatorL2, coralAngleL2);
-        Command coralAlignL3 = new SequentialCommandGroup(stowAlgae, elevatorL3, coralAngleL3);
-        Command coralAlignL4 = new SequentialCommandGroup(stowAlgae, elevatorL4, coralAngleL4);
+        // Command coralAlignFeeder = new SequentialCommandGroup(stowAlgae, elevatorFeeder, coralAngleFeeder);
+        // Command coralAlignL2 = new SequentialCommandGroup(stowAlgae, elevatorL2, coralAngleL2);
+        // Command coralAlignL3 = new SequentialCommandGroup(stowAlgae, elevatorL3, coralAngleL3);
+        // Command coralAlignL4 = new SequentialCommandGroup(stowAlgae, elevatorL4, coralAngleL4);
 
-        NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
-        NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
-        NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
+        // NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
+        // NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
+        // NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
 
         Command coralIn = new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake);
         Command coralOut = new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake);
+
+        Command climb = new StartEndCommand(climber::run, climber::stop, climber);
+        NamedCommands.registerCommand("climb", climb);
         // TODO: verify in/out
         NamedCommands.registerCommand("coralIn", coralIn);
         NamedCommands.registerCommand("coralOut", coralOut);
@@ -135,6 +138,7 @@ public class Robot extends LoggedRobot {
     public void setTeleopBindings(){
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
+        pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
 
         coPilotController.a().onTrue(NamedCommands.getCommand("coralAlignFeeder"));
         coPilotController.b().onTrue(NamedCommands.getCommand("coralAlignL2"));
