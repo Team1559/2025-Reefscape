@@ -49,13 +49,13 @@ public class SwerveDrive2025 extends SwerveDrive {
     private static SwerveModuleIo[] createModules() {
         double swerveModuleX = Units.inchesToMeters(12);
         double swerveModuleY = Units.inchesToMeters(12);
-        SwerveModuleIo frontLeft = createSwerveModule("frontLeft", 1, 3, 2, Rotation2d.fromRadians(1.249),
+        SwerveModuleIo frontLeft = createSwerveModule("frontLeft", 1, 3, 2, Rotation2d.fromRadians(0),
                 new Translation2d(swerveModuleX, swerveModuleY));
-        SwerveModuleIo frontRight = createSwerveModule("frontRight", 4, 6, 5, Rotation2d.fromRadians(-1.231),
+        SwerveModuleIo frontRight = createSwerveModule("frontRight", 4, 6, 5, Rotation2d.fromRadians(0),
                 new Translation2d(swerveModuleX, -swerveModuleY));
-        SwerveModuleIo rearLeft = createSwerveModule("rearLeft", 10, 12, 11, Rotation2d.fromRadians(-2.251),
+        SwerveModuleIo rearLeft = createSwerveModule("rearLeft", 10, 12, 11, Rotation2d.fromRadians(0),
                 new Translation2d(-swerveModuleX, swerveModuleY));
-        SwerveModuleIo rearRight = createSwerveModule("rearRight", 7, 9, 8, Rotation2d.fromRadians(-1.574),
+        SwerveModuleIo rearRight = createSwerveModule("rearRight", 7, 9, 8, Rotation2d.fromRadians(0),
                 new Translation2d(-swerveModuleX, -swerveModuleY));
         return new SwerveModuleIo[] { frontLeft, frontRight, rearLeft, rearRight };
     }

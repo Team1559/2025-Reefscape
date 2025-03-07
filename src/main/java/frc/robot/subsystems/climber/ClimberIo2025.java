@@ -20,7 +20,7 @@ public class ClimberIo2025 extends ClimberIo {
 
         SparkFlexConfig motorConfig = new SparkFlexConfig();
         motorConfig.idleMode(IdleMode.kBrake);
-        motorConfig.inverted(true); //TODO: change later
+        motorConfig.inverted(false); //TODO: change later
 
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
