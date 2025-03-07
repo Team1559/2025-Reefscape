@@ -176,15 +176,15 @@ public class Robot extends LoggedRobot {
         coPilotController.leftBumper()
                 .whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
 
-        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
-        coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
+        // coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
+        // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
 
-        // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        // CoralIntake.TargetAngle.L2_ANGLE));
-        // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        // CoralIntake.TargetAngle.L4_ANGLE));
-        // coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        // CoralIntake.TargetAngle.SOURCE_ANGLE));
+        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
+        CoralIntake.TargetAngle.L2_ANGLE));
+        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
+        CoralIntake.TargetAngle.L4_ANGLE));
+        coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
+        CoralIntake.TargetAngle.SOURCE_ANGLE));
     }
 
     @Override
@@ -215,7 +215,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().schedule(goToZero);
 
         clearControllers();
-        setTeleopBindings();
+        setTestBindings();
     }
 
     @Override

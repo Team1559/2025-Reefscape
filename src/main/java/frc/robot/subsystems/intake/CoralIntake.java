@@ -22,7 +22,7 @@ public class CoralIntake extends Intake {
         L3_ANGLE(Rotation2d.fromRadians(-.593)),
         L4_ANGLE(Rotation2d.fromRadians(-.94)),
         
-        SOURCE_ANGLE(Rotation2d.fromRadians(.362));
+        SOURCE_ANGLE(Rotation2d.fromRadians(0.570));
         public final Rotation2d angle;
 
         TargetAngle(Rotation2d angle) {
