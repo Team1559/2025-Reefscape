@@ -18,4 +18,8 @@ public class Climber extends LoggableSubsystem {
     public void stop() {
         io.stop();
     }
+
+    public void testReverse(){
+        io.testReverse();
+    }
 }

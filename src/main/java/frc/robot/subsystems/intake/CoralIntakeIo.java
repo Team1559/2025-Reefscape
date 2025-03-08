@@ -28,7 +28,7 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
     private static final double BATTERY_VOLTAGE = 12;
-    private static final double INTAKE_MOTOR_VOLTAGE = 3;
+    private static final double INTAKE_MOTOR_VOLTAGE = 6;
     
     private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
 

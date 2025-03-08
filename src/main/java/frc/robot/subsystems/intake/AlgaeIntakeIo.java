@@ -80,7 +80,7 @@ public class AlgaeIntakeIo extends IntakeIo {
         angleMotorConfig.idleMode(IdleMode.kBrake);
         angleMotorConfig.closedLoop.maxMotion.maxAcceleration(ANGLE_MOTOR_ACCEL);
         angleMotorConfig.closedLoop.maxMotion.maxVelocity(MAX_ANGLE_MOTOR_RPM);
-        angleMotorConfig.closedLoop.pid(1, 0, 0); // TODO: set these later
+        angleMotorConfig.closedLoop.pid(.25, 0, 0); // TODO: set these later
         angleMotorConfig.inverted(true);
         angleMotor.configure(angleMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         angleMotor.getEncoder().setPosition(getCurrentAngle().getRotations() * ANGLE_GEAR_RATIO);

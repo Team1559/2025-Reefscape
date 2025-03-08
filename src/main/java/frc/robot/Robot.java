@@ -160,12 +160,12 @@ public class Robot extends LoggedRobot {
         coPilotController.x().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("elevatorL4"));
 
         coPilotController.y().onTrue(NamedCommands.getCommand("elevatorL4"));
-        // coPilotController.povDown().onTrue(manualElevatorUp);//.onTrue(elevatorHome);
+        coPilotController.start().onTrue(NamedCommands.getCommand("manualElevatorUp"));//.onTrue(elevatorHome);
 
         drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
                 pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
         pilotController.a().onTrue(new InstantCommand(elevator::stop));// TODO: temp
-
+        
         coPilotController.rightTrigger()
                 .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
         coPilotController.rightBumper()
@@ -176,7 +176,7 @@ public class Robot extends LoggedRobot {
         coPilotController.leftBumper()
                 .whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
 
-        // coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
+        coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
         // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
 
         coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
@@ -185,6 +185,9 @@ public class Robot extends LoggedRobot {
         CoralIntake.TargetAngle.L4_ANGLE));
         coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
         CoralIntake.TargetAngle.SOURCE_ANGLE));
+
+        pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+        pilotController.leftTrigger().whileTrue(new StartEndCommand(climber::testReverse, climber::stop, climber));
     }
 
     @Override
@@ -228,6 +231,10 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void testInit() {
+        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+        }, (b) -> {
+        }, elevator::isHome, elevator);
+        CommandScheduler.getInstance().schedule(goToZero);
         clearCommandBindings();
         setTestBindings();
     }

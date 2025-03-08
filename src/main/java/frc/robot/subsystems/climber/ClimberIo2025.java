@@ -5,11 +5,14 @@ import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.wpilibj.DriverStation;
+
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 public class ClimberIo2025 extends ClimberIo {
-    private static final double MOTOR_VOLTS = 1; //TODO: change this to voltage that works
-    
+    private static final double MOTOR_VOLTS = 2;
+
     private final SparkFlex motor;
     private final SparkLimitSwitch limitSwitch;
 
@@ -24,11 +27,23 @@ public class ClimberIo2025 extends ClimberIo {
 
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     } 
+
     @Override
     public void run() {
         super.run();
         motor.setVoltage(MOTOR_VOLTS);
     }
+
+    @Override
+    public void testReverse(){
+        super.testReverse();
+        if(!DriverStation.isTestEnabled()){
+                DriverStation.reportWarning("DO NOT REVERSE CLIMBER!!!", false);
+        }else{
+            motor.setVoltage(-MOTOR_VOLTS);
+        }
+    }
+
     @Override
     public void stop() {
         super.stop();

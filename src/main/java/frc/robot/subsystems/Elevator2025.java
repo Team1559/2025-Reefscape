@@ -20,8 +20,8 @@ public class Elevator2025 extends Elevator {
         L3_CORAL(.578),
         L4_CORAL(1.374),
         
-        L2_ALGAE(1.36/2),
-        L3_ALGAE(1.36*(3/4d));
+        L2_ALGAE(.454),
+        L3_ALGAE(.891);
         // TODO: Fix values
 
         public final double height;
