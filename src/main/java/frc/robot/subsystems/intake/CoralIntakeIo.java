@@ -32,10 +32,6 @@ public class CoralIntakeIo extends IntakeIo {
     
     private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
 
-    private static final double INTAKE_MOTOR_GEAR_RATIO = 72d/50;
-    private static final double INTAKE_MOTOR_RPM = 250d/3 * INTAKE_MOTOR_GEAR_RATIO; //2 rev/s mechanism
-    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .1;// 0.5s 
-
     private static final double ANGLE_GEAR_RATIO = 25;
     private static final double MAX_ANGLE_MOTOR_RPM = 12 * ANGLE_GEAR_RATIO;
     private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
@@ -65,7 +61,6 @@ public class CoralIntakeIo extends IntakeIo {
 
         SparkFlexConfig intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig.idleMode(IdleMode.kBrake);
-        intakeMotorConfig.closedLoop.maxMotion.maxAcceleration(INTAKE_MOTOR_ACCEL);
         intakeMotorConfig.inverted(false);
         intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 

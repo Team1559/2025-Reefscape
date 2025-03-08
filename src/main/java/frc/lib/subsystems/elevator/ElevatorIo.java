@@ -15,9 +15,9 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
         public double currentPosition;
         public double motorCurrent;
         public double currentVelocity;
-        public double temp;
+        public double motorTemp;
 
-        public double error;
+        public double heightError;
     }
 
     public ElevatorIo(String name) {

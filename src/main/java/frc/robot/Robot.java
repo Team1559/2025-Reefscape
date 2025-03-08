@@ -72,7 +72,7 @@ public class Robot extends LoggedRobot {
         DriverStation.silenceJoystickConnectionWarning(true);
     }
 
-    public void clearControllers() {
+    public void clearCommandBindings() {
         CommandScheduler.getInstance().getActiveButtonLoop().clear();
     }
 
@@ -214,8 +214,8 @@ public class Robot extends LoggedRobot {
         }, elevator::isHome, elevator);
         CommandScheduler.getInstance().schedule(goToZero);
 
-        clearControllers();
-        setTestBindings();
+        clearCommandBindings();
+        setTeleopBindings();
     }
 
     @Override
@@ -228,7 +228,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void testInit() {
-        clearControllers();
+        clearCommandBindings();
         setTestBindings();
     }
 
