@@ -151,6 +151,7 @@ public class SdsSwerveModuleIo extends SwerveModuleIo {
 
     @Override
     protected void updateInputs(SwerveInputs inputs) {
+        StatusSignal.refreshAll(driveMotorVelocity, canCoderAbsolutePosition, driveMotorPosition, steerMotorTemperature, driveMotorTemperature,steerMotorCurrent,driveMotorCurrent);
         inputs.speed = getSpeed();
         inputs.angle = getAngle();
         inputs.distance = getDistanceTraveled();

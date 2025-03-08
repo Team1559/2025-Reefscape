@@ -33,7 +33,7 @@ public class SwerveDrive2025 extends SwerveDrive {
         TalonFX steerMotor = new TalonFX(steerMotorId, canivoreBusName);
         TalonFX driveMotor = new TalonFX(driveMotorId, canivoreBusName);
 
-        Slot0Configs steerMotorPid = new Slot0Configs().withKP(60);
+        Slot0Configs steerMotorPid = new Slot0Configs().withKP(80);
         Slot0Configs driveMotorPid = new Slot0Configs().withKV(12 / (6380.0 / 60)); // TODO: add the kd
 
         return new SdsSwerveModuleIo(name, locationOffset, ModuleType.MK4i_L3, steerMotor, steerMotorPid,
@@ -49,13 +49,13 @@ public class SwerveDrive2025 extends SwerveDrive {
     private static SwerveModuleIo[] createModules() {
         double swerveModuleX = Units.inchesToMeters(12);
         double swerveModuleY = Units.inchesToMeters(12);
-        SwerveModuleIo frontLeft = createSwerveModule("frontLeft", 1, 3, 2, Rotation2d.fromRadians(1.249),
+        SwerveModuleIo frontLeft = createSwerveModule("frontLeft", 1, 3, 2, Rotation2d.fromRadians(-1.896),
                 new Translation2d(swerveModuleX, swerveModuleY));
-        SwerveModuleIo frontRight = createSwerveModule("frontRight", 4, 6, 5, Rotation2d.fromRadians(-1.231),
+        SwerveModuleIo frontRight = createSwerveModule("frontRight", 4, 6, 5, Rotation2d.fromRadians(1.894),
                 new Translation2d(swerveModuleX, -swerveModuleY));
-        SwerveModuleIo rearLeft = createSwerveModule("rearLeft", 10, 12, 11, Rotation2d.fromRadians(-2.251),
+        SwerveModuleIo rearLeft = createSwerveModule("rearLeft", 10, 12, 11, Rotation2d.fromRadians(3.025),
                 new Translation2d(-swerveModuleX, swerveModuleY));
-        SwerveModuleIo rearRight = createSwerveModule("rearRight", 7, 9, 8, Rotation2d.fromRadians(-1.574),
+        SwerveModuleIo rearRight = createSwerveModule("rearRight", 7, 9, 8, Rotation2d.fromRadians(1.578),
                 new Translation2d(-swerveModuleX, -swerveModuleY));
         return new SwerveModuleIo[] { frontLeft, frontRight, rearLeft, rearRight };
     }

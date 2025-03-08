@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkBase.ControlType;
@@ -15,14 +17,16 @@ import edu.wpi.first.math.util.Units;
 import frc.lib.subsystems.elevator.ElevatorIo;
 
 public class ElevatorIo2025 extends ElevatorIo {
-    private static final double GEAR_RATIO = 9;
+    private static final double GEAR_RATIO = 15;
     private static final int GEAR_TEETH = 13;
     private static final double RACK_SPACING = Units.inchesToMeters(3D / 8D);
     private static final double MAX_HEIGHT = Units.inchesToMeters(55);
-    private static final double MAX_VELOCITY = 4;
-    private static final double MAX_ACCEL = 0.5;
-    private static final double GRAVITY_FEEDFORWARD = .0; // TODO: change this
+    private static final double MAX_VELOCITY = 1;
+    private static final double MAX_ACCEL = MAX_VELOCITY / .5;
+    private static final double GRAVITY_FEEDFORWARD = .324;
     private static final int NUM_STAGES = 2;
+    private static final double ELEVATOR_DEADBAND = .001;
+    private static final double HOME_VOLTAGE = -12 * .01;
 
     private final SparkFlex motor;
     private final RelativeEncoder encoder;
@@ -30,6 +34,7 @@ public class ElevatorIo2025 extends ElevatorIo {
     private final SparkLimitSwitch limitSwitch;
 
     private boolean lastLimitSwitchState = false;
+    private double targetHeight;
 
     public ElevatorIo2025(String name, SparkFlex motor) {
         super(name);
@@ -42,9 +47,11 @@ public class ElevatorIo2025 extends ElevatorIo {
         motorConfig.idleMode(IdleMode.kBrake);
         motorConfig.closedLoop.maxMotion.maxVelocity(heightToMotorRotations(MAX_VELOCITY) * 60);
         motorConfig.closedLoop.maxMotion.maxAcceleration(heightToMotorRotations(MAX_ACCEL) * 60);
-        motorConfig.closedLoop.pid(.2, 0, 0); // TODO: set these later
+
+        motorConfig.closedLoop.pid(.1, 0, 0); // TODO: set these later
         motorConfig.inverted(false);
 
+        motorConfig.smartCurrentLimit(200, 200);// TODO: DON'T SAVE THIS
         motorConfig.softLimit.forwardSoftLimit(heightToMotorRotations(MAX_HEIGHT));
         motorConfig.softLimit.forwardSoftLimitEnabled(true);
         motor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -55,6 +62,10 @@ public class ElevatorIo2025 extends ElevatorIo {
         inputs.isHome = limitSwitch.isPressed();
         inputs.currentPosition = motorRotationsToHeight(encoder.getPosition());
         inputs.motorCurrent = motor.getOutputCurrent();
+        inputs.currentVelocity = motorRotationsToHeight(encoder.getVelocity()) / 60;
+        inputs.motorTemp = motor.getMotorTemperature();
+
+        inputs.heightError = targetHeight - inputs.currentPosition;
     }
 
     @Override
@@ -64,14 +75,23 @@ public class ElevatorIo2025 extends ElevatorIo {
         if (isPressed && !lastLimitSwitchState) { // Rising edge
             encoder.setPosition(0);
         }
-
+        double error = targetHeight - getInputs().currentPosition;
+        if (-ELEVATOR_DEADBAND > error && error < ELEVATOR_DEADBAND) {
+            setTargetPosition(targetHeight, ControlType.kPosition);
+        }
         lastLimitSwitchState = isPressed;
     }
 
     @Override
     public void setTargetPosition(double targetHeight) {
+        setTargetPosition(targetHeight, ControlType.kMAXMotionPositionControl);
+    }
+
+    public void setTargetPosition(double targetHeight, ControlType controlType) {
         super.setTargetPosition(targetHeight);
-        motorController.setReference(heightToMotorRotations(targetHeight), ControlType.kMAXMotionPositionControl,
+        this.targetHeight = targetHeight;
+        Logger.recordOutput(getOutputLogPath("ControlType"), controlType);
+        motorController.setReference(heightToMotorRotations(targetHeight), controlType,
                 ClosedLoopSlot.kSlot0, GRAVITY_FEEDFORWARD);
     }
 
@@ -86,6 +106,6 @@ public class ElevatorIo2025 extends ElevatorIo {
     @Override
     public void goHome() {
         super.goHome();
-        motor.setVoltage(-12 * 0.05);
+        motor.setVoltage(HOME_VOLTAGE);
     }
 }

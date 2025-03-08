@@ -7,29 +7,26 @@ import frc.lib.subsystems.elevator.ElevatorIo.ElevatorInputs;
 public class Elevator extends LoggableSubsystem {
     private final ElevatorIo io;
     private double targetPosition;
-    private final double heightOffset;
 
-    public Elevator(String name, ElevatorIo io, double heightOffset) {
+    public Elevator(String name, ElevatorIo io) {
         super(name);
         this.io = io;
         targetPosition = 0.0;
-        this.heightOffset = heightOffset;
-
         addIo(io);
     }
 
     public void setTargetPosition(double pos) {
         targetPosition = pos;
-        io.setTargetPosition(pos - heightOffset);
+        io.setTargetPosition(pos);
     }
 
     public void changeTargetPosition(double diff) {
-        setTargetPosition(io.getInputs().currentPosition + diff + heightOffset);
+        setTargetPosition(io.getInputs().currentPosition + diff);
     }
 
     public boolean isAtTargetPosition(double tolerance) {
         ElevatorInputs inputs = io.getInputs();
-        return Math.abs(inputs.currentPosition - targetPosition + heightOffset) < tolerance;
+        return Math.abs(inputs.currentPosition - targetPosition) < tolerance;
     }
     
     public void stop() {

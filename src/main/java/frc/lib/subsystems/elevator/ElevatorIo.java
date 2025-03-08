@@ -4,6 +4,8 @@ import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
+import com.revrobotics.spark.SparkBase.ControlType;
+
 import frc.lib.subsystems.LoggableIo;
 
 public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
@@ -12,6 +14,10 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
         public boolean isHome;
         public double currentPosition;
         public double motorCurrent;
+        public double currentVelocity;
+        public double motorTemp;
+
+        public double heightError;
     }
 
     public ElevatorIo(String name) {
@@ -28,6 +34,6 @@ public class ElevatorIo extends LoggableIo<ElevatorIo.ElevatorInputs> {
     }
 
     public void goHome() {
-        Logger.recordOutput(getOutputLogPath("TargetPosition"), 0);
+        Logger.recordOutput(getOutputLogPath("TargetPosition"), 0D);
     }
 }
