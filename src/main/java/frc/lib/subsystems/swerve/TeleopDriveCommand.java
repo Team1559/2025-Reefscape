@@ -4,6 +4,8 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class TeleopDriveCommand extends Command {
@@ -47,8 +49,13 @@ public class TeleopDriveCommand extends Command {
             y = 0;
         } else {
             double deadbandMagnitude = MathUtil.applyDeadband(magnitude, DEADBAND);
-            x *= deadbandMagnitude/magnitude;
-            y *= deadbandMagnitude/magnitude;
+            x *= deadbandMagnitude / magnitude;
+            y *= deadbandMagnitude / magnitude;
+        }
+
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+            x *= -1;
+            y *= -1;
         }
 
         rotation = MathUtil.applyDeadband(rotation, DEADBAND);

@@ -83,7 +83,6 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public ChassisSpeeds getCurrentSpeed() {
-
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
         for (int i = 0; i < states.length; i++) {
             SwerveInputs inputs = modules[i].getInputs();
@@ -104,7 +103,6 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     public void addVisionMeasurement(Pose2d estimatedPose2d, double timestamp, Matrix<N3, N1> standardDeviation) {
         estimator.addVisionMeasurement(estimatedPose2d, timestamp, standardDeviation);
     }
-    
 
     @Override
     public void periodic() {
@@ -124,6 +122,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private void log() {
         Logger.recordOutput(getLogPath("EstimatedPosition"), getPosition());
         Logger.recordOutput(getLogPath("Heading"), gyro.getInputs().yaw);
+        Logger.recordOutput(getLogPath("TargetVelocity"), getCurrentSpeed());
         // Logger.recordOutput(getName() + "/distanceToTag19",
         // getPosition().getTranslation().minus(new
         // Translation2d(4.074,4.745)).getNorm());
