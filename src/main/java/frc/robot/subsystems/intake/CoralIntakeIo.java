@@ -64,6 +64,7 @@ public class CoralIntakeIo extends IntakeIo {
         SparkFlexConfig intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig.idleMode(IdleMode.kBrake);
         intakeMotorConfig.inverted(false);
+        intakeMotorConfig.smartCurrentLimit(120);
         intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         CANcoderConfiguration angleEncoderConfig = new CANcoderConfiguration();
@@ -93,7 +94,7 @@ public class CoralIntakeIo extends IntakeIo {
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        double voltage = forward ? INTAKE_MOTOR_VOLTAGE: -INTAKE_MOTOR_VOLTAGE;
+        double voltage = forward ? INTAKE_MOTOR_VOLTAGE * 2: -INTAKE_MOTOR_VOLTAGE *2;
         intakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
 

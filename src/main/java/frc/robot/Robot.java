@@ -109,20 +109,21 @@ public class Robot extends LoggedRobot {
         NamedCommands.registerCommand("algaeL3", algaeLevelThree);
 
         Command algaeStow = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED);
+        Command algaeStow2 = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED);
         Command algaeReef = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF);
         Command algaeFloor = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.FLOOR);
 
-        NamedCommands.registerCommand("algaeStow", algaeStow);
+        NamedCommands.registerCommand("algaeStow", algaeStow2);
         NamedCommands.registerCommand("algaeReef", algaeReef);
         NamedCommands.registerCommand("algaeFloor", algaeFloor);
 
-        Command coralAlignFeeder = new SequentialCommandGroup(algaeStow,
+        Command coralAlignFeeder = new SequentialCommandGroup(//algaeStow,
         elevatorFeeder, coralAngleFeeder);
-        Command coralAlignL2 = new SequentialCommandGroup(algaeStow, elevatorL2,
+        Command coralAlignL2 = new SequentialCommandGroup(/*algaeStow,*/ elevatorL2,
         coralAngleL2);
-        Command coralAlignL3 = new SequentialCommandGroup(algaeStow, elevatorL3,
+        Command coralAlignL3 = new SequentialCommandGroup(/*algaeStow,*/ elevatorL3,
         coralAngleL3);
-        Command coralAlignL4 = new SequentialCommandGroup(algaeStow, elevatorL4,
+        Command coralAlignL4 = new SequentialCommandGroup(/*algaeStow,*/ elevatorL4,
         coralAngleL4);
 
         NamedCommands.registerCommand("coralAlignFeeder", coralAlignFeeder);
