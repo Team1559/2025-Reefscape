@@ -19,7 +19,9 @@ public class AlgaeIntake extends Intake {
     public enum TargetAngle {
         STOWED(Rotation2d.fromRadians(1.434)),
         REEF(Rotation2d.fromDegrees(-6)),
-        PROCESSOR(Rotation2d.fromDegrees(-6));
+        PROCESSOR(Rotation2d.fromDegrees(-6)),
+        FLOOR(Rotation2d.fromRadians(-.58)),
+        BARGE(Rotation2d.fromRadians(.691));
 
         public final Rotation2d angle;
         TargetAngle(Rotation2d angle) {

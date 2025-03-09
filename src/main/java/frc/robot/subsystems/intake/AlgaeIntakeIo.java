@@ -18,21 +18,23 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 
 public class AlgaeIntakeIo extends IntakeIo {
-    
+
     private static final double INTAKE_MASS = 4.536;
     private static final double RADIUS_TO_COM = Units.inchesToMeters(3.831);
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double BATTERY_VOLTAGE = 12;
 
     private static final double MOTOR_STALL_TORQUE = 3.6;
-    
+
     private static final double ANGLE_GEAR_RATIO = 75;
-    private static final double MAX_ANGLE_MOTOR_RPM = 15 * ANGLE_GEAR_RATIO; 
-    private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM/.5;
-    
+    private static final double MAX_ANGLE_MOTOR_RPM = 15 * ANGLE_GEAR_RATIO;
+    private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
+
+    private static final double ANGLE_DEADBAND = .05;
+
     private static final double INTAKE_GEAR_RATIO = 50;
     private static final double INTAKE_MOTOR_RPM = 120 * INTAKE_GEAR_RATIO;
-    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM/.1;
+    private static final double INTAKE_MOTOR_ACCEL = INTAKE_MOTOR_RPM / .1;
     private static final double INTAKE_MOTOR_MAX_RPM = 11000;
     private static final double INTAKE_MOTOR_VOLTAGE = INTAKE_MOTOR_RPM / INTAKE_MOTOR_MAX_RPM * BATTERY_VOLTAGE;
     private final SparkMax rightIntakeMotor;
@@ -95,7 +97,7 @@ public class AlgaeIntakeIo extends IntakeIo {
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        double voltage = forward ? INTAKE_MOTOR_VOLTAGE:-INTAKE_MOTOR_VOLTAGE;
+        double voltage = forward ? INTAKE_MOTOR_VOLTAGE * 2 : -INTAKE_MOTOR_VOLTAGE;
         rightIntakeMotorController.setReference(voltage, ControlType.kVoltage);
         leftIntakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
@@ -114,7 +116,8 @@ public class AlgaeIntakeIo extends IntakeIo {
     }
 
     public double gravityFeedForward(Rotation2d angle) {
-        return angle.getCos() * GRAVITY_ACCEL * INTAKE_MASS * RADIUS_TO_COM / ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE * BATTERY_VOLTAGE;
+        return angle.getCos() * GRAVITY_ACCEL * INTAKE_MASS * RADIUS_TO_COM / ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE
+                * BATTERY_VOLTAGE;
     }
 
     @Override
@@ -122,8 +125,13 @@ public class AlgaeIntakeIo extends IntakeIo {
         super.periodic();
         if (targetAngle == null) {
             angleMotor.stopMotor();
+        } else if (-ANGLE_DEADBAND <= targetAngle.minus(getInputs().currentAngle).getRadians() && targetAngle.minus(getInputs().currentAngle).getRadians() <= ANGLE_DEADBAND) {
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kPosition,
+                    ClosedLoopSlot.kSlot0,
+                    gravityFeedForward(getInputs().currentAngle));
         } else {
-            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0,
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl,
+                    ClosedLoopSlot.kSlot0,
                     gravityFeedForward(getInputs().currentAngle));
         }
     }
