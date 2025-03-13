@@ -19,7 +19,11 @@ public class Climber extends LoggableSubsystem {
         io.stop();
     }
 
-    public void testReverse(){
-        io.testReverse();
+    @Override
+    public void periodic(){
+        super.periodic();
+        if (io.getInputs().isDone) {
+            stop();
+        }
     }
 }

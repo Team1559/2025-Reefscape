@@ -252,8 +252,6 @@ public class Robot extends LoggedRobot {
                 // CoralIntake.TargetAngle.SOURCE_ANGLE));
 
                 pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
-                pilotController.leftTrigger()
-                                .whileTrue(new StartEndCommand(climber::testReverse, climber::stop, climber));
         }
 
         @Override

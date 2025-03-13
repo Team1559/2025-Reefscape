@@ -22,7 +22,4 @@ public class ClimberIo extends LoggableIo<ClimberIo.ClimberInputs> {
     public void stop() {
         Logger.recordOutput(getOutputLogPath("IsRunning"), false);
     }
-    public void testReverse(){
-        
-    }
 }
