@@ -81,9 +81,9 @@ public class TeleopDriveCommand extends Command {
         if(driveRobotOriented.getAsBoolean()){
             swerveDrive.driveRobotOriented(chassisSpeeds);
         } else if(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            swerveDrive.driveFieldOriented(new ChassisSpeeds(-x, -y, rotation));
-        } else {
             swerveDrive.driveFieldOriented(chassisSpeeds);
+        } else {
+            swerveDrive.driveFieldOriented(new ChassisSpeeds(-x, -y, rotation));
         }
     }
 

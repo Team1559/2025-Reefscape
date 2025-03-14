@@ -128,5 +128,4 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         // Translation2d(4.074,4.745)).getNorm());
         // TODO: Just for testing :p
     }
-
 }

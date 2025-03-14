@@ -49,7 +49,7 @@ public class Robot extends LoggedRobot {
 
         private final SwerveDrive2025 drivetrain;
         private final Vision2025 vision;
-        // private final Elevator2025 elevator;
+        private final Elevator2025 elevator;
         private final CoralIntake coralIntake;
         // private final AlgaeIntake algaeIntake;
 
@@ -71,7 +71,7 @@ public class Robot extends LoggedRobot {
                 drivetrain = new SwerveDrive2025();
 
                 vision = new Vision2025(drivetrain);
-                // elevator = new Elevator2025();
+                elevator = new Elevator2025();
                 coralIntake = new CoralIntake();
                 // algaeIntake = new AlgaeIntake();
                 climber = new Climber2025();
@@ -86,17 +86,17 @@ public class Robot extends LoggedRobot {
         }
 
         public void makeCommands() {
-                // Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
-                // Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
-                // Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
-                // Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
-                // Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
+                Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
+                Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
+                Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
+                Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
+                Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
 
-                // NamedCommands.registerCommand("elevatorL1", elevatorL1);
-                // NamedCommands.registerCommand("elevatorL2", elevatorL2);
-                // NamedCommands.registerCommand("elevatorL3", elevatorL3);
-                // NamedCommands.registerCommand("elevatorL4", elevatorL4);
-                // NamedCommands.registerCommand("elevatorFeeder", elevatorFeeder);
+                NamedCommands.registerCommand("elevatorL1", elevatorL1);
+                NamedCommands.registerCommand("elevatorL2", elevatorL2);
+                NamedCommands.registerCommand("elevatorL3", elevatorL3);
+                NamedCommands.registerCommand("elevatorL4", elevatorL4);
+                NamedCommands.registerCommand("elevatorFeeder", elevatorFeeder);
 
                 Command coralAngleFeeder = new CoralIntakeAngleCommand(coralIntake,
                                 CoralIntake.TargetAngle.SOURCE_ANGLE);
@@ -105,10 +105,10 @@ public class Robot extends LoggedRobot {
                 Command coralAngleL4 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L4_ANGLE);
                 Command coralAngleStow = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.STOW);
 
-                // NamedCommands.registerCommand("coralAngleFeeder", coralAngleFeeder);
-                // NamedCommands.registerCommand("coralAngleL2", coralAngleL2);
-                // NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
-                // NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
+                NamedCommands.registerCommand("coralAngleFeeder", coralAngleFeeder);
+                NamedCommands.registerCommand("coralAngleL2", coralAngleL2);
+                NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
+                NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
 
                 // Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_ALGAE);
                 // Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_ALGAE);
@@ -129,19 +129,19 @@ public class Robot extends LoggedRobot {
                 // NamedCommands.registerCommand("algaeReef", algaeReef);
                 // NamedCommands.registerCommand("algaeFloor", algaeFloor);
 
-                // Command coralAlignFeeder = new SequentialCommandGroup(
-                //                 elevatorFeeder, coralAngleFeeder);
-                // Command coralAlignL2 = new SequentialCommandGroup(elevatorL2,
-                //                 coralAngleL2);
-                // Command coralAlignL3 = new SequentialCommandGroup(elevatorL3,
-                //                 coralAngleL3);
-                // Command coralAlignL4 = new SequentialCommandGroup(elevatorL4,
-                                // coralAngleL4);
+                Command coralAlignFeeder = new SequentialCommandGroup(
+                                elevatorFeeder, coralAngleFeeder);
+                Command coralAlignL2 = new SequentialCommandGroup(elevatorL2,
+                                coralAngleL2);
+                Command coralAlignL3 = new SequentialCommandGroup(elevatorL3,
+                                coralAngleL3);
+                Command coralAlignL4 = new SequentialCommandGroup(elevatorL4,
+                                coralAngleL4);
 
-                // NamedCommands.registerCommand("coralAlignFeeder", coralAlignFeeder);
-                // NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
-                // NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
-                // NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
+                NamedCommands.registerCommand("coralAlignFeeder", coralAlignFeeder);
+                NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
+                NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
+                NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
 
                 Command climb = new StartEndCommand(climber::run, climber::stop, climber);
                 NamedCommands.registerCommand("climb", climb);
@@ -162,14 +162,14 @@ public class Robot extends LoggedRobot {
                 // NamedCommands.registerCommand("algaeIn", algaeIn);
                 // NamedCommands.registerCommand("algaeOut", algaeOut);
 
-                // Command elevatorHome = new InstantCommand(
-                //                 () -> elevator.goHome(),
-                //                 elevator);
-                // NamedCommands.registerCommand("elevatorHome", elevatorHome);
+                Command elevatorHome = new InstantCommand(
+                                () -> elevator.goHome(),
+                                elevator);
+                NamedCommands.registerCommand("elevatorHome", elevatorHome);
 
-                // Command manualElevatorUp = new InstantCommand(
-                //                 () -> elevator.changeTargetPosition(.005), elevator);
-                // NamedCommands.registerCommand("manualElevatorUp", manualElevatorUp);
+                Command manualElevatorUp = new InstantCommand(
+                                () -> elevator.changeTargetPosition(.005), elevator);
+                NamedCommands.registerCommand("manualElevatorUp", manualElevatorUp);
         }
 
         public void setTeleopBindings() {
@@ -190,17 +190,17 @@ public class Robot extends LoggedRobot {
                                 drivetrain, robotOrientedMod));
                 pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
 
-                // coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
-                // coPilotController.b().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL2"));
-                // coPilotController.x().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL3"));
-                // coPilotController.y().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL4"));
+                coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
+                coPilotController.b().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL2"));
+                coPilotController.x().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL3"));
+                coPilotController.y().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL4"));
 
                 // // coPilotController.a().and(algaeMod).onTrue(NamedCommands.getCommand("algaeDown"));
                 // // coPilotController.b().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL2"));
                 // // coPilotController.x().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL3"));
 
-                // coPilotController.rightTrigger().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralIn"));
-                // coPilotController.rightBumper().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralOut"));
+                coPilotController.rightTrigger().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralIn"));
+                coPilotController.rightBumper().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralOut"));
 
                 // coPilotController.rightTrigger().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeIn"));
                 // coPilotController.rightBumper().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeOut"));
@@ -289,6 +289,7 @@ public class Robot extends LoggedRobot {
         @Override
         public void autonomousInit() {
                 CommandScheduler.getInstance().schedule(autoChooser.getSelected());
+                
         }
 
         @Override
