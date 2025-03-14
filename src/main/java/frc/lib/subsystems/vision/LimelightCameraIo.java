@@ -54,7 +54,7 @@ public class LimelightCameraIo extends VisionCameraIo {
             if (usingMegaTag2) {
                 // TODO: u pickin up what im puttin down? (Dont do small bc megatag 2 no good
                 // with yaw)
-                inputs.stdevRotation = Rotation2d.fromDegrees(stddevs[11] * STDEV_MULTIPLIER);
+                inputs.stdevRotation = MEGATAG2_STDEV_YAW;//Rotation2d.fromDegrees(stddevs[11] * STDEV_MULTIPLIER);
                 inputs.stdevX = stddevs[6] * STDEV_MULTIPLIER;
                 inputs.stdevY = stddevs[7] * STDEV_MULTIPLIER;
             } else {
