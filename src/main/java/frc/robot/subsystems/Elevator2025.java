@@ -16,9 +16,9 @@ public class Elevator2025 extends Elevator {
     public enum Level {
         FEEDER(0),
         L1_CORAL(0),
-        L2_CORAL(.153),
+        L2_CORAL(.165),
         L3_CORAL(.578),
-        L4_CORAL(1.374),
+        L4_CORAL(1.35),
         
         L2_ALGAE(.454),
         L3_ALGAE(.818);

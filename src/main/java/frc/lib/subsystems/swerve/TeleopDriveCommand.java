@@ -66,8 +66,8 @@ public class TeleopDriveCommand extends Command {
             y *= deadbandMagnitude / magnitude;
         }
 
-        x = squareKeepSign(x);
-        y = squareKeepSign(y);
+        x = squareKeepSign(squareKeepSign(x));
+        y = squareKeepSign(squareKeepSign(y));
         rotation = squareKeepSign(rotation);
 
         rotation = MathUtil.applyDeadband(rotation, DEADBAND);
@@ -81,9 +81,9 @@ public class TeleopDriveCommand extends Command {
         if(driveRobotOriented.getAsBoolean()){
             swerveDrive.driveRobotOriented(chassisSpeeds);
         } else if(DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-            swerveDrive.driveFieldOriented(chassisSpeeds);
-        } else {
             swerveDrive.driveFieldOriented(new ChassisSpeeds(-x, -y, rotation));
+        } else {
+            swerveDrive.driveFieldOriented(chassisSpeeds);
         }
     }
 

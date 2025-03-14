@@ -18,6 +18,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,8 +26,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
@@ -55,8 +59,8 @@ public class Robot extends LoggedRobot {
 
         private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
         private static final double SWERVE_MAX_ANGULAR_VELOCITY = 9;
-        private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 4;
-        private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 4;
+        private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 8;
+        private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 8;
         private final Climber2025 climber;
 
         public Robot() {
@@ -86,6 +90,9 @@ public class Robot extends LoggedRobot {
         }
 
         public void makeCommands() {
+                // Command resetGyro = new InstantCommand(drivetrain::resetGyroDriver);
+                // NamedCommands.registerCommand("resetGyroDriver", resetGyro);
+
                 Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
                 Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
                 Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
@@ -110,8 +117,10 @@ public class Robot extends LoggedRobot {
                 NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
                 NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
 
-                // Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_ALGAE);
-                // Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_ALGAE);
+                // Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator,
+                // Level.L2_ALGAE);
+                // Command algaeLevelThree = new ElevatorHeightCommand2025(elevator,
+                // Level.L3_ALGAE);
                 // Command algaeDown = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
 
                 // NamedCommands.registerCommand("algaeL2", algaeLevelTwo);
@@ -175,7 +184,8 @@ public class Robot extends LoggedRobot {
         public void setTeleopBindings() {
                 Trigger algaeMod = coPilotController.leftTrigger();
                 Trigger robotOrientedMod = pilotController.leftTrigger();
-                // DoubleSupplier elevatorSpeedScale = () -> 1 - (elevator.getHeight() / Level.L4_CORAL.height) * 7 / 8;
+                // DoubleSupplier elevatorSpeedScale = () -> 1 - (elevator.getHeight() /
+                // Level.L4_CORAL.height) * 7 / 8;
                 // TODO: The whole implementation is a little wack
                 drivetrain.setDefaultCommand(
                                 new TeleopDriveCommand(() -> -pilotController.getLeftY(),
@@ -189,15 +199,19 @@ public class Robot extends LoggedRobot {
                                 SWERVE_SLOW_ANGULAR_VELOCITY, // elevatorSpeedScale,
                                 drivetrain, robotOrientedMod));
                 pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+                // pilotController.a().onTrue(NamedCommands.getCommand("resetGyroDriver"));
 
                 coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
                 coPilotController.b().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL2"));
                 coPilotController.x().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL3"));
                 coPilotController.y().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL4"));
 
-                // // coPilotController.a().and(algaeMod).onTrue(NamedCommands.getCommand("algaeDown"));
-                // // coPilotController.b().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL2"));
-                // // coPilotController.x().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL3"));
+                // //
+                // coPilotController.a().and(algaeMod).onTrue(NamedCommands.getCommand("algaeDown"));
+                // //
+                // coPilotController.b().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL2"));
+                // //
+                // coPilotController.x().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL3"));
 
                 coPilotController.rightTrigger().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralIn"));
                 coPilotController.rightBumper().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralOut"));
@@ -226,12 +240,12 @@ public class Robot extends LoggedRobot {
                 // .onTrue(elevatorHome);
 
                 // drivetrain.setDefaultCommand(
-                //                 new TeleopDriveCommand(() -> pilotController.getLeftY(),
-                //                                 () -> pilotController.getLeftX(),
-                //                                 () -> -pilotController.getRightX(), SWERVE_MAX_LINEAR_VELOCITY,
-                //                                 SWERVE_MAX_ANGULAR_VELOCITY,
-                //                                 () -> 1 / (elevator.getHeight()),
-                //                                 drivetrain, robotOrientedMod));
+                // new TeleopDriveCommand(() -> pilotController.getLeftY(),
+                // () -> pilotController.getLeftX(),
+                // () -> -pilotController.getRightX(), SWERVE_MAX_LINEAR_VELOCITY,
+                // SWERVE_MAX_ANGULAR_VELOCITY,
+                // () -> 1 / (elevator.getHeight()),
+                // drivetrain, robotOrientedMod));
                 pilotController.leftBumper().whileTrue(new TeleopDriveCommand(() -> -pilotController.getLeftY(),
                                 () -> -pilotController.getLeftX(),
                                 () -> -pilotController.getRightX(), SWERVE_SLOW_LINEAR_VELOCITY,
@@ -288,8 +302,13 @@ public class Robot extends LoggedRobot {
 
         @Override
         public void autonomousInit() {
-                CommandScheduler.getInstance().schedule(autoChooser.getSelected());
-                
+                drivetrain.resetGyroAuto();
+                CommandScheduler.getInstance().schedule(new ParallelRaceGroup(
+                                new TeleopDriveCommand(
+                                                () -> -.5,
+                                                () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY,
+                                                SWERVE_MAX_ANGULAR_VELOCITY, drivetrain, () -> false),
+                                new WaitCommand(1)));
         }
 
         @Override
