@@ -24,7 +24,9 @@ public class TeleopDriveCommand extends Command {
     private final BooleanSupplier driveRobotOriented;
 
 
-
+    public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier, double maxLinearVelocity, double maxRotationalVelocity, DoubleSupplier speedScale, SwerveDrive swerve, BooleanSupplier driveRobotOriented){
+        this(() -> xSupplier.getAsDouble() * speedScale.getAsDouble(), () -> ySupplier.getAsDouble() * speedScale.getAsDouble(), () -> rSupplier.getAsDouble() * speedScale.getAsDouble(), maxLinearVelocity, maxRotationalVelocity, swerve, driveRobotOriented);
+    }
     public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier,
             double maxLinearVelocity, double maxRotationalVelocity, SwerveDrive swerveDrive) {
         this(xSupplier, ySupplier, rSupplier, maxLinearVelocity, maxRotationalVelocity, swerveDrive, () -> false);
@@ -88,4 +90,6 @@ public class TeleopDriveCommand extends Command {
     private double squareKeepSign(double x){
         return x * Math.abs(x);
     }
+
+    //TODO: I (Kyle) plan on adding a builder here
 }
