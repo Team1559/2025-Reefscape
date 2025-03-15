@@ -1,5 +1,6 @@
 package frc.lib.subsystems.swerve;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -10,6 +11,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -36,11 +38,13 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private final SwerveDrivePoseEstimator estimator;
     private final GyroIo gyro;
     private final Translation2d[] locations;
+    public final DoubleSupplier maxAccel;
 
-    public SwerveDrive(String name, GyroIo gyro, SwerveModuleIo... modules) {
+    public SwerveDrive(String name, GyroIo gyro, DoubleSupplier maxAccel, SwerveModuleIo... modules) {
         super(name);
         this.gyro = gyro;
         this.modules = modules;
+        this.maxAccel = maxAccel;
         Translation2d[] locations = new Translation2d[modules.length];
         SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
         for (int i = 0; i < locations.length; i++) {
@@ -71,6 +75,17 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public void driveRobotOriented(ChassisSpeeds speeds) {
+        if (maxAccel != null) {
+            ChassisSpeeds currentSpeeds = getCurrentSpeed();
+            double step = maxAccel.getAsDouble() *.02;
+            double currentXVelocity = currentSpeeds.vxMetersPerSecond;
+            double currentYVelocity = currentSpeeds.vyMetersPerSecond;
+
+            speeds.vxMetersPerSecond = MathUtil.clamp(speeds.vxMetersPerSecond, currentXVelocity - step,
+                    currentXVelocity + step);
+            speeds.vyMetersPerSecond = MathUtil.clamp(speeds.vyMetersPerSecond, currentYVelocity - step,
+                    currentYVelocity + step);
+        }
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         for (int i = 0; i < modules.length; i++) {
             states[i].optimize(modules[i].getInputs().angle);

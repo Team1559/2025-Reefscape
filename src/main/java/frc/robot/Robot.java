@@ -72,10 +72,9 @@ public class Robot extends LoggedRobot {
                 pilotController = new CommandXboxController(0);
                 coPilotController = new CommandXboxController(1);
 
-                drivetrain = new SwerveDrive2025();
-
-                vision = new Vision2025(drivetrain);
                 elevator = new Elevator2025();
+                drivetrain = new SwerveDrive2025(() -> 5 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .5));
+                vision = new Vision2025(drivetrain);
                 coralIntake = new CoralIntake();
                 // algaeIntake = new AlgaeIntake();
                 climber = new Climber2025();
@@ -184,22 +183,23 @@ public class Robot extends LoggedRobot {
         public void setTeleopBindings() {
                 Trigger algaeMod = coPilotController.leftTrigger();
                 Trigger robotOrientedMod = pilotController.leftTrigger();
-                // DoubleSupplier elevatorSpeedScale = () -> 1 - (elevator.getHeight() /
-                // Level.L4_CORAL.height) * 7 / 8;
                 // TODO: The whole implementation is a little wack
                 drivetrain.setDefaultCommand(
-                                new TeleopDriveCommand(() -> -pilotController.getLeftY(),
-                                                () -> -pilotController.getLeftX(),
-                                                () -> -pilotController.getRightX(), SWERVE_MAX_LINEAR_VELOCITY,
-                                                SWERVE_MAX_ANGULAR_VELOCITY, // elevatorSpeedScale,
+                                new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_MAX_LINEAR_VELOCITY,
+                                                SWERVE_MAX_ANGULAR_VELOCITY,
                                                 drivetrain, robotOrientedMod));
-                pilotController.leftBumper().whileTrue(new TeleopDriveCommand(() -> -pilotController.getLeftY(),
-                                () -> -pilotController.getLeftX(),
-                                () -> -pilotController.getRightX(), SWERVE_SLOW_LINEAR_VELOCITY,
-                                SWERVE_SLOW_ANGULAR_VELOCITY, // elevatorSpeedScale,
-                                drivetrain, robotOrientedMod));
+                pilotController.leftBumper()
+                                .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_SLOW_LINEAR_VELOCITY,
+                                                SWERVE_SLOW_ANGULAR_VELOCITY,
+                                                drivetrain, robotOrientedMod));
                 pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
-                // pilotController.a().onTrue(NamedCommands.getCommand("resetGyroDriver"));
+                pilotController.a().onTrue(NamedCommands.getCommand("resetGyroDriver"));
 
                 coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
                 coPilotController.b().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL2"));
@@ -246,11 +246,13 @@ public class Robot extends LoggedRobot {
                 // SWERVE_MAX_ANGULAR_VELOCITY,
                 // () -> 1 / (elevator.getHeight()),
                 // drivetrain, robotOrientedMod));
-                pilotController.leftBumper().whileTrue(new TeleopDriveCommand(() -> -pilotController.getLeftY(),
-                                () -> -pilotController.getLeftX(),
-                                () -> -pilotController.getRightX(), SWERVE_SLOW_LINEAR_VELOCITY,
-                                SWERVE_SLOW_ANGULAR_VELOCITY,
-                                drivetrain, robotOrientedMod));
+                pilotController.leftBumper()
+                                .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_SLOW_LINEAR_VELOCITY,
+                                                SWERVE_SLOW_ANGULAR_VELOCITY,
+                                                drivetrain, robotOrientedMod));
                 // coPilotController.rightTrigger()
                 // .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () ->
                 // algaeIntake.stop(),
@@ -302,13 +304,16 @@ public class Robot extends LoggedRobot {
 
         @Override
         public void autonomousInit() {
-                drivetrain.resetGyroAuto();
-                CommandScheduler.getInstance().schedule(new ParallelRaceGroup(
-                                new TeleopDriveCommand(
-                                                () -> -.5,
-                                                () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY,
-                                                SWERVE_MAX_ANGULAR_VELOCITY, drivetrain, () -> false),
-                                new WaitCommand(1)));
+                // drivetrain.resetGyroAuto();
+                drivetrain.setDefaultCommand(new TeleopDriveCommand(
+                                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? -.3 : .3,
+                                () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain,
+                                () -> true));
+                // CommandScheduler.getInstance().schedule(new ParallelRaceGroup(
+                // new TeleopDriveCommand(() -> .1, () -> 0, () -> 0,
+                // SWERVE_MAX_LINEAR_VELOCITY,
+                // SWERVE_MAX_ANGULAR_VELOCITY, drivetrain, () -> true).until(() -> false),
+                // new WaitCommand(1)));
         }
 
         @Override
@@ -346,5 +351,9 @@ public class Robot extends LoggedRobot {
 
         @Override
         public void testExit() {
+        }
+
+        private double nthKeepSign(double num, int n) {
+                return Math.copySign(Math.pow(num, n), num);
         }
 }

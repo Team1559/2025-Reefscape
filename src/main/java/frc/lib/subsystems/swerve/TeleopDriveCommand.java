@@ -66,10 +66,6 @@ public class TeleopDriveCommand extends Command {
             y *= deadbandMagnitude / magnitude;
         }
 
-        x = squareKeepSign(squareKeepSign(x));
-        y = squareKeepSign(squareKeepSign(y));
-        rotation = squareKeepSign(rotation);
-
         rotation = MathUtil.applyDeadband(rotation, DEADBAND);
 
         x *= maxLinearVelocity;
