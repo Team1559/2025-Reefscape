@@ -18,4 +18,12 @@ public class Climber extends LoggableSubsystem {
     public void stop() {
         io.stop();
     }
+
+    @Override
+    public void periodic(){
+        super.periodic();
+        if (io.getInputs().isDone) {
+            stop();
+        }
+    }
 }

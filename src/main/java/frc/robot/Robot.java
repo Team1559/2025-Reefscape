@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -13,15 +17,22 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.AlgaeIntakeAngleCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
@@ -36,207 +47,313 @@ import frc.robot.subsystems.intake.CoralIntake;
 
 public class Robot extends LoggedRobot {
 
-    private final SendableChooser<Command> autoChooser;
-    private final CommandXboxController pilotController;
-    private final CommandXboxController coPilotController;
+        private final SendableChooser<Command> autoChooser;
+        private final CommandXboxController pilotController;
+        private final CommandXboxController coPilotController;
 
-    private final SwerveDrive2025 drivetrain;
-    private final Vision2025 vision;
-    private final Elevator2025 elevator;
-    private final CoralIntake coralIntake;
-    private final AlgaeIntake algaeIntake;
+        private final SwerveDrive2025 drivetrain;
+        private final Vision2025 vision;
+        private final Elevator2025 elevator;
+        private final CoralIntake coralIntake;
+        // private final AlgaeIntake algaeIntake;
 
-    private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
-    private static final double SWERVE_MAX_ANGULAR_VELOCITY = 1.925;
-    private final Climber2025 climber;
+        private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
+        private static final double SWERVE_MAX_ANGULAR_VELOCITY = 9;
+        private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 8;
+        private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 8;
+        private final Climber2025 climber;
 
-    public Robot() {
-        Logger.addDataReceiver(new WPILOGWriter());
-        Logger.addDataReceiver(new NT4Publisher());
-        Logger.start();
-        Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
+        public Robot() {
+                Logger.addDataReceiver(new WPILOGWriter());
+                Logger.addDataReceiver(new NT4Publisher());
+                Logger.start();
+                Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
 
-        pilotController = new CommandXboxController(0);
-        coPilotController = new CommandXboxController(1);
+                pilotController = new CommandXboxController(0);
+                coPilotController = new CommandXboxController(1);
 
-        drivetrain = new SwerveDrive2025();
+                elevator = new Elevator2025();
+                drivetrain = new SwerveDrive2025(() -> 5 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .5));
+                vision = new Vision2025(drivetrain);
+                coralIntake = new CoralIntake();
+                // algaeIntake = new AlgaeIntake();
+                climber = new Climber2025();
+                autoChooser = AutoBuilder.buildAutoChooser();
+                SmartDashboard.putData(autoChooser);
 
-        vision = new Vision2025(drivetrain);
-        elevator = new Elevator2025();
-        coralIntake = new CoralIntake();
-        algaeIntake = new AlgaeIntake();
-        climber = new Climber2025();
-        autoChooser = AutoBuilder.buildAutoChooser();
-        SmartDashboard.putData(autoChooser);
+                DriverStation.silenceJoystickConnectionWarning(true);
+        }
 
-        DriverStation.silenceJoystickConnectionWarning(true);
-    }
+        public void clearCommandBindings() {
+                CommandScheduler.getInstance().getActiveButtonLoop().clear();
+        }
 
-    public void clearCommandBindings() {
-        CommandScheduler.getInstance().getActiveButtonLoop().clear();
-    }
+        public void makeCommands() {
+                // Command resetGyro = new InstantCommand(drivetrain::resetGyroDriver);
+                // NamedCommands.registerCommand("resetGyroDriver", resetGyro);
 
-    public void makeCommands() {
-        Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
-        Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
-        Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
-        Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
-        Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
+                Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
+                Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
+                Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
+                Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
+                Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
 
-        NamedCommands.registerCommand("elevatorL1", elevatorL1);
-        NamedCommands.registerCommand("elevatorL2", elevatorL2);
-        NamedCommands.registerCommand("elevatorL3", elevatorL3);
-        NamedCommands.registerCommand("elevatorL4", elevatorL4);
-        NamedCommands.registerCommand("elevatorFeeder", elevatorFeeder);
+                NamedCommands.registerCommand("elevatorL1", elevatorL1);
+                NamedCommands.registerCommand("elevatorL2", elevatorL2);
+                NamedCommands.registerCommand("elevatorL3", elevatorL3);
+                NamedCommands.registerCommand("elevatorL4", elevatorL4);
+                NamedCommands.registerCommand("elevatorFeeder", elevatorFeeder);
 
-        Command coralAngleFeeder = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.SOURCE_ANGLE);
-        Command coralAngleL2 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
-        Command coralAngleL3 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
-        Command coralAngleL4 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
+                Command coralAngleFeeder = new CoralIntakeAngleCommand(coralIntake,
+                                CoralIntake.TargetAngle.SOURCE_ANGLE);
+                Command coralAngleL2 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
+                Command coralAngleL3 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L2_ANGLE);
+                Command coralAngleL4 = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.L4_ANGLE);
+                Command coralAngleStow = new CoralIntakeAngleCommand(coralIntake, CoralIntake.TargetAngle.STOW);
 
-        NamedCommands.registerCommand("coralAngleFeeder", coralAngleFeeder);
-        NamedCommands.registerCommand("coralAngleL2", coralAngleL2);
-        NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
-        NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
-        
-        Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator, Level.L2_ALGAE);
-        Command algaeLevelThree = new ElevatorHeightCommand2025(elevator, Level.L3_ALGAE);
+                NamedCommands.registerCommand("coralAngleFeeder", coralAngleFeeder);
+                NamedCommands.registerCommand("coralAngleL2", coralAngleL2);
+                NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
+                NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
 
-        NamedCommands.registerCommand("algaeLevel2", algaeLevelTwo);
-        NamedCommands.registerCommand("algaeLevel3", algaeLevelThree);
+                // Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator,
+                // Level.L2_ALGAE);
+                // Command algaeLevelThree = new ElevatorHeightCommand2025(elevator,
+                // Level.L3_ALGAE);
+                // Command algaeDown = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
 
-        Command stowAlgae = new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED);
+                // NamedCommands.registerCommand("algaeL2", algaeLevelTwo);
+                // NamedCommands.registerCommand("algaeL3", algaeLevelThree);
+                // NamedCommands.registerCommand("algaeDown", algaeDown);
 
-        // Command coralAlignFeeder = new SequentialCommandGroup(stowAlgae, elevatorFeeder, coralAngleFeeder);
-        // Command coralAlignL2 = new SequentialCommandGroup(stowAlgae, elevatorL2, coralAngleL2);
-        // Command coralAlignL3 = new SequentialCommandGroup(stowAlgae, elevatorL3, coralAngleL3);
-        // Command coralAlignL4 = new SequentialCommandGroup(stowAlgae, elevatorL4, coralAngleL4);
+                // Supplier<Command> algaeStow = () -> new AlgaeIntakeAngleCommand(algaeIntake,
+                // AlgaeIntake.TargetAngle.STOWED);
+                // Command algaeReef = new AlgaeIntakeAngleCommand(algaeIntake,
+                // AlgaeIntake.TargetAngle.REEF);
+                // Command algaeFloor = new AlgaeIntakeAngleCommand(algaeIntake,
+                // AlgaeIntake.TargetAngle.FLOOR);
 
-        // NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
-        // NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
-        // NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
+                // NamedCommands.registerCommand("algaeStow", algaeStow.get());
+                // NamedCommands.registerCommand("algaeReef", algaeReef);
+                // NamedCommands.registerCommand("algaeFloor", algaeFloor);
 
-        Command coralIn = new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake);
-        Command coralOut = new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake);
+                Command coralAlignFeeder = new SequentialCommandGroup(
+                                elevatorFeeder, coralAngleFeeder);
+                Command coralAlignL2 = new SequentialCommandGroup(elevatorL2,
+                                coralAngleL2);
+                Command coralAlignL3 = new SequentialCommandGroup(elevatorL3,
+                                coralAngleL3);
+                Command coralAlignL4 = new SequentialCommandGroup(elevatorL4,
+                                coralAngleL4);
 
-        Command climb = new StartEndCommand(climber::run, climber::stop, climber);
-        NamedCommands.registerCommand("climb", climb);
-        // TODO: verify in/out
-        NamedCommands.registerCommand("coralIn", coralIn);
-        NamedCommands.registerCommand("coralOut", coralOut);
+                NamedCommands.registerCommand("coralAlignFeeder", coralAlignFeeder);
+                NamedCommands.registerCommand("coralAlignL2", coralAlignL2);
+                NamedCommands.registerCommand("coralAlignL3", coralAlignL3);
+                NamedCommands.registerCommand("coralAlignL4", coralAlignL4);
 
-        Command elevatorHome = new InstantCommand(
-                () -> elevator.goHome(),
-                elevator);
-        NamedCommands.registerCommand("elevatorHome", elevatorHome);
+                Command climb = new StartEndCommand(climber::run, climber::stop, climber);
+                NamedCommands.registerCommand("climb", climb);
 
-        Command manualElevatorUp = new InstantCommand(
-                () -> elevator.changeTargetPosition(.005), elevator);
-        NamedCommands.registerCommand("manualElevatorUp", manualElevatorUp);
-    }
+                Command coralIn = new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(),
+                                coralIntake);
+                Command coralOut = new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(),
+                                coralIntake);
+                NamedCommands.registerCommand("coralIn", coralIn);
+                NamedCommands.registerCommand("coralOut", coralOut);
 
-    public void setTeleopBindings(){
-        drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
-                pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
-        pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+                // Command algaeIn = new StartEndCommand(() -> algaeIntake.run(false), () ->
+                // algaeIntake.stop(),
+                // algaeIntake);
+                // Command algaeOut = new StartEndCommand(() -> algaeIntake.run(true), () ->
+                // algaeIntake.stop(),
+                // algaeIntake);
+                // NamedCommands.registerCommand("algaeIn", algaeIn);
+                // NamedCommands.registerCommand("algaeOut", algaeOut);
 
-        coPilotController.a().onTrue(NamedCommands.getCommand("coralAlignFeeder"));
-        coPilotController.b().onTrue(NamedCommands.getCommand("coralAlignL2"));
-        coPilotController.x().onTrue(NamedCommands.getCommand("coralAlignL3"));
-        coPilotController.y().onTrue(NamedCommands.getCommand("coralAlignL4"));
+                Command elevatorHome = new InstantCommand(
+                                () -> elevator.goHome(),
+                                elevator);
+                NamedCommands.registerCommand("elevatorHome", elevatorHome);
 
-        coPilotController.rightBumper().whileTrue(NamedCommands.getCommand("coralIn"));
-        coPilotController.rightTrigger().whileTrue(NamedCommands.getCommand("coralOut"));
-        
-    }
+                Command manualElevatorUp = new InstantCommand(
+                                () -> elevator.changeTargetPosition(.005), elevator);
+                NamedCommands.registerCommand("manualElevatorUp", manualElevatorUp);
+        }
 
-    public void setTestBindings() {
-        coPilotController.a().onTrue(NamedCommands.getCommand("elevatorL1"));
-        coPilotController.b().and(coPilotController.rightTrigger().negate())
-                .onTrue(NamedCommands.getCommand("elevatorL2"));
-        coPilotController.b().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("algaeLevel2"));
-        coPilotController.x().and(coPilotController.rightTrigger().negate())
-                .onTrue(NamedCommands.getCommand(("elevatorL3")));
-        coPilotController.x().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("elevatorL4"));
+        public void setTeleopBindings() {
+                Trigger algaeMod = coPilotController.leftTrigger();
+                Trigger robotOrientedMod = pilotController.leftTrigger();
+                // TODO: The whole implementation is a little wack
+                drivetrain.setDefaultCommand(
+                                new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_MAX_LINEAR_VELOCITY,
+                                                SWERVE_MAX_ANGULAR_VELOCITY,
+                                                drivetrain, robotOrientedMod));
+                pilotController.leftBumper()
+                                .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_SLOW_LINEAR_VELOCITY,
+                                                SWERVE_SLOW_ANGULAR_VELOCITY,
+                                                drivetrain, robotOrientedMod));
+                pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+                pilotController.a().onTrue(NamedCommands.getCommand("resetGyroDriver"));
 
-        coPilotController.y().onTrue(NamedCommands.getCommand("elevatorL4"));
-        // coPilotController.povDown().onTrue(manualElevatorUp);//.onTrue(elevatorHome);
+                coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
+                coPilotController.b().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL2"));
+                coPilotController.x().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL3"));
+                coPilotController.y().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL4"));
 
-        drivetrain.setDefaultCommand(new TeleopDriveCommand(pilotController::getLeftY, pilotController::getLeftX,
-                pilotController::getRightX, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain));
-        pilotController.a().onTrue(new InstantCommand(elevator::stop));// TODO: temp
+                // //
+                // coPilotController.a().and(algaeMod).onTrue(NamedCommands.getCommand("algaeDown"));
+                // //
+                // coPilotController.b().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL2"));
+                // //
+                // coPilotController.x().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL3"));
 
-        coPilotController.rightTrigger()
-                .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () -> algaeIntake.stop(), algaeIntake));
-        coPilotController.rightBumper()
-                .whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () -> algaeIntake.stop(), algaeIntake));
+                coPilotController.rightTrigger().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralIn"));
+                coPilotController.rightBumper().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralOut"));
 
-        coPilotController.leftTrigger()
-                .whileTrue(new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(), coralIntake));
-        coPilotController.leftBumper()
-                .whileTrue(new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake));
+                // coPilotController.rightTrigger().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeIn"));
+                // coPilotController.rightBumper().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeOut"));
 
-        // coPilotController.povUp().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.STOWED));
-        // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake, AlgaeIntake.TargetAngle.REEF));
+                // coPilotController.povUp().onTrue(NamedCommands.getCommand("algaeStow"));
+                // coPilotController.povDown().onTrue(NamedCommands.getCommand("algaeFloor"));
+                // coPilotController.povRight().onTrue(NamedCommands.getCommand("algaeReef"));
+        }
 
-        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        CoralIntake.TargetAngle.L2_ANGLE));
-        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        CoralIntake.TargetAngle.L4_ANGLE));
-        coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
-        CoralIntake.TargetAngle.SOURCE_ANGLE));
-    }
+        public void setTestBindings() {
+                Trigger robotOrientedMod = pilotController.leftTrigger();
+                // coPilotController.a().onTrue(NamedCommands.getCommand("elevatorL1"));
+                // coPilotController.b().and(coPilotController.rightTrigger().negate())
+                // .onTrue(NamedCommands.getCommand("elevatorL2"));
+                // coPilotController.b().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("algaeL2"));
+                // coPilotController.x().and(coPilotController.rightTrigger().negate())
+                // .onTrue(NamedCommands.getCommand(("elevatorL3")));
+                // coPilotController.x().and(coPilotController.rightTrigger())
+                // .onTrue(NamedCommands.getCommand("elevatorL4"));
 
-    @Override
-    public void robotInit() {
-        makeCommands();
-    }
+                // coPilotController.y().onTrue(NamedCommands.getCommand("elevatorL4"));
+                // coPilotController.start().onTrue(NamedCommands.getCommand("manualElevatorUp"));//
+                // .onTrue(elevatorHome);
 
-    @Override
-    public void robotPeriodic() {
-        CommandScheduler.getInstance().run();
-    }
+                // drivetrain.setDefaultCommand(
+                // new TeleopDriveCommand(() -> pilotController.getLeftY(),
+                // () -> pilotController.getLeftX(),
+                // () -> -pilotController.getRightX(), SWERVE_MAX_LINEAR_VELOCITY,
+                // SWERVE_MAX_ANGULAR_VELOCITY,
+                // () -> 1 / (elevator.getHeight()),
+                // drivetrain, robotOrientedMod));
+                pilotController.leftBumper()
+                                .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                                                SWERVE_SLOW_LINEAR_VELOCITY,
+                                                SWERVE_SLOW_ANGULAR_VELOCITY,
+                                                drivetrain, robotOrientedMod));
+                // coPilotController.rightTrigger()
+                // .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () ->
+                // algaeIntake.stop(),
+                // algaeIntake));
+                // coPilotController.rightBumper()
+                // .whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () ->
+                // algaeIntake.stop(),
+                // algaeIntake));
 
-    @Override
-    public void disabledInit() {
-        CommandScheduler.getInstance().cancelAll();
-    }
+                // coPilotController.leftTrigger()
+                // .whileTrue(new StartEndCommand(() -> coralIntake.run(false), () ->
+                // coralIntake.stop(),
+                // coralIntake));
+                // coPilotController.leftBumper()
+                // .whileTrue(new StartEndCommand(() -> coralIntake.run(true), () ->
+                // coralIntake.stop(),
+                // coralIntake));
 
-    @Override
-    public void autonomousInit() {
-        CommandScheduler.getInstance().schedule(autoChooser.getSelected());
-    }
+                // coPilotController.povUp()
+                // .onTrue(new AlgaeIntakeAngleCommand(algaeIntake,
+                // AlgaeIntake.TargetAngle.PROCESSOR));
+                // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake,
+                // AlgaeIntake.TargetAngle.FLOOR));
 
-    @Override
-    public void teleopInit() {
-        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
-        }, (b) -> {
-        }, elevator::isHome, elevator);
-        CommandScheduler.getInstance().schedule(goToZero);
+                // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                // CoralIntake.TargetAngle.BARGE));
+                // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                // CoralIntake.TargetAngle.L4_ANGLE));
+                // // coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                // // CoralIntake.TargetAngle.SOURCE_ANGLE));
 
-        clearCommandBindings();
-        setTeleopBindings();
-    }
+                pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+        }
 
-    @Override
-    public void teleopPeriodic() {
-    }
+        @Override
+        public void robotInit() {
+                makeCommands();
+        }
 
-    @Override
-    public void teleopExit() {
-    }
+        @Override
+        public void robotPeriodic() {
+                CommandScheduler.getInstance().run();
+        }
 
-    @Override
-    public void testInit() {
-        clearCommandBindings();
-        setTestBindings();
-    }
+        @Override
+        public void disabledInit() {
+                CommandScheduler.getInstance().cancelAll();
+        }
 
-    @Override
-    public void testPeriodic() {
-    }
+        @Override
+        public void autonomousInit() {
+                // drivetrain.resetGyroAuto();
+                drivetrain.setDefaultCommand(new TeleopDriveCommand(
+                                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? -.3 : .3,
+                                () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain,
+                                () -> true));
+                // CommandScheduler.getInstance().schedule(new ParallelRaceGroup(
+                // new TeleopDriveCommand(() -> .1, () -> 0, () -> 0,
+                // SWERVE_MAX_LINEAR_VELOCITY,
+                // SWERVE_MAX_ANGULAR_VELOCITY, drivetrain, () -> true).until(() -> false),
+                // new WaitCommand(1)));
+        }
 
-    @Override
-    public void testExit() {
-    }
+        @Override
+        public void teleopInit() {
+                // FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+                // }, (b) -> {
+                // }, elevator::isHome, elevator);
+                // CommandScheduler.getInstance().schedule(goToZero);
+
+                clearCommandBindings();
+                setTeleopBindings();
+        }
+
+        @Override
+        public void teleopPeriodic() {
+        }
+
+        @Override
+        public void teleopExit() {
+        }
+
+        @Override
+        public void testInit() {
+                // FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+                // }, (b) -> {
+                // }, elevator::isHome, elevator);
+                // CommandScheduler.getInstance().schedule(goToZero);
+                clearCommandBindings();
+                setTestBindings();
+        }
+
+        @Override
+        public void testPeriodic() {
+        }
+
+        @Override
+        public void testExit() {
+        }
+
+        private double nthKeepSign(double num, int n) {
+                return Math.copySign(Math.pow(num, n), num);
+        }
 }

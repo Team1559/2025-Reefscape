@@ -3,6 +3,7 @@ package frc.lib.subsystems.swerve;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.ClosedLoopGeneralConfigs;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -87,6 +88,7 @@ public class SdsSwerveModuleIo extends SwerveModuleIo {
                 .withNeutralMode(NeutralModeValue.Brake)
                 .withInverted(InvertedValue.Clockwise_Positive));
         driveMotor.getConfigurator().apply(driveMotorPid);
+        driveMotor.getConfigurator().apply(new CurrentLimitsConfigs().withStatorCurrentLimit(80));
         driveMotor.setPosition(0);
 
         cancoder.getConfigurator().apply(new CANcoderConfiguration());
@@ -151,7 +153,8 @@ public class SdsSwerveModuleIo extends SwerveModuleIo {
 
     @Override
     protected void updateInputs(SwerveInputs inputs) {
-        StatusSignal.refreshAll(driveMotorVelocity, canCoderAbsolutePosition, driveMotorPosition, steerMotorTemperature, driveMotorTemperature,steerMotorCurrent,driveMotorCurrent);
+        StatusSignal.refreshAll(driveMotorVelocity, canCoderAbsolutePosition, driveMotorPosition, steerMotorTemperature,
+                driveMotorTemperature, steerMotorCurrent, driveMotorCurrent);
         inputs.speed = getSpeed();
         inputs.angle = getAngle();
         inputs.distance = getDistanceTraveled();

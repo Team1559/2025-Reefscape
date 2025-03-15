@@ -28,13 +28,15 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
     private static final double BATTERY_VOLTAGE = 12;
-    private static final double INTAKE_MOTOR_VOLTAGE = 3;
+    private static final double INTAKE_MOTOR_VOLTAGE = 2;
     
     private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
 
     private static final double ANGLE_GEAR_RATIO = 25;
-    private static final double MAX_ANGLE_MOTOR_RPM = 12 * ANGLE_GEAR_RATIO;
+    private static final double MAX_ANGLE_MOTOR_RPM = 50 * ANGLE_GEAR_RATIO;
     private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
+
+    private static final double ANGLE_DEADBAND = .05;
     
     private final SparkFlex intakeMotor;
     private final SparkFlex angleMotor;
@@ -62,6 +64,7 @@ public class CoralIntakeIo extends IntakeIo {
         SparkFlexConfig intakeMotorConfig = new SparkFlexConfig();
         intakeMotorConfig.idleMode(IdleMode.kBrake);
         intakeMotorConfig.inverted(false);
+        intakeMotorConfig.smartCurrentLimit(80);
         intakeMotor.configure(intakeMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         CANcoderConfiguration angleEncoderConfig = new CANcoderConfiguration();
@@ -91,7 +94,7 @@ public class CoralIntakeIo extends IntakeIo {
     @Override
     public void run(boolean forward) {
         super.run(forward);
-        double voltage = forward ? INTAKE_MOTOR_VOLTAGE: -INTAKE_MOTOR_VOLTAGE;
+        double voltage = forward ? INTAKE_MOTOR_VOLTAGE * 2: -INTAKE_MOTOR_VOLTAGE *2;
         intakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
 
@@ -114,9 +117,13 @@ public class CoralIntakeIo extends IntakeIo {
     @Override
     public void periodic() {
         super.periodic();
+
         if (targetAngle == null) {
             angleMotor.stopMotor();
-        } else {
+        } else if(-ANGLE_DEADBAND <= targetAngle.minus(getInputs().currentAngle).getRadians() && targetAngle.minus(getInputs().currentAngle).getRadians() <= ANGLE_DEADBAND){
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kPosition, ClosedLoopSlot.kSlot0,
+                    gravityFeedForward(getInputs().currentAngle));
+        } else{
             angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0,
                     gravityFeedForward(getInputs().currentAngle));
         }
