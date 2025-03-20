@@ -28,25 +28,26 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double GRAVITY_ACCEL = 9.81;
     private static final double MOTOR_STALL_TORQUE = 3.6;
     private static final double BATTERY_VOLTAGE = 12;
-    private static final double INTAKE_MOTOR_VOLTAGE = 2;
-    
-    private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;//.9 -> fudge
+    private static final double INTAKE_MOTOR_VOLTAGE = 4;
+    private static final double SLOW_INTAKE_VOLTAGE = 1;
+
+    private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;// .9 -> fudge
 
     private static final double ANGLE_GEAR_RATIO = 25;
     private static final double MAX_ANGLE_MOTOR_RPM = 50 * ANGLE_GEAR_RATIO;
     private static final double ANGLE_MOTOR_ACCEL = MAX_ANGLE_MOTOR_RPM / .5;
 
     private static final double ANGLE_DEADBAND = .05;
-    
+
     private final SparkFlex intakeMotor;
     private final SparkFlex angleMotor;
     private final CANcoder angleEncoder;
-    
+
     private final SparkClosedLoopController intakeMotorController;
     private final SparkClosedLoopController angleMotorController;
-    
+
     private final Rotation2d angleEncoderOffset;
-    
+
     private final StatusSignal<Angle> absolutePosition;
     private Rotation2d targetAngle;
 
@@ -91,10 +92,19 @@ public class CoralIntakeIo extends IntakeIo {
         inputs.intakeCurrent = intakeMotor.getOutputCurrent();
     }
 
-    @Override
     public void run(boolean forward) {
-        super.run(forward);
-        double voltage = forward ? INTAKE_MOTOR_VOLTAGE * 2: -INTAKE_MOTOR_VOLTAGE *2;
+        run(forward, false);
+    }
+
+    @Override
+    public void run(boolean forward, boolean slow) {
+        super.run(forward, slow);
+        double voltage;
+        if (slow) {
+            voltage = forward ? SLOW_INTAKE_VOLTAGE : -SLOW_INTAKE_VOLTAGE;
+        } else {
+            voltage = forward ? INTAKE_MOTOR_VOLTAGE : -INTAKE_MOTOR_VOLTAGE;
+        }
         intakeMotorController.setReference(voltage, ControlType.kVoltage);
     }
 
@@ -111,7 +121,8 @@ public class CoralIntakeIo extends IntakeIo {
     }
 
     public double gravityFeedForward(Rotation2d angle) {
-        return angle.getCos() * GRAVITY_ACCEL * MOMENT_OF_INERTIA/ ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE * BATTERY_VOLTAGE;
+        return angle.getCos() * GRAVITY_ACCEL * MOMENT_OF_INERTIA / ANGLE_GEAR_RATIO / MOTOR_STALL_TORQUE
+                * BATTERY_VOLTAGE;
     }
 
     @Override
@@ -120,11 +131,14 @@ public class CoralIntakeIo extends IntakeIo {
 
         if (targetAngle == null) {
             angleMotor.stopMotor();
-        } else if(-ANGLE_DEADBAND <= targetAngle.minus(getInputs().currentAngle).getRadians() && targetAngle.minus(getInputs().currentAngle).getRadians() <= ANGLE_DEADBAND){
-            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kPosition, ClosedLoopSlot.kSlot0,
+        } else if (-ANGLE_DEADBAND <= targetAngle.minus(getInputs().currentAngle).getRadians()
+                && targetAngle.minus(getInputs().currentAngle).getRadians() <= ANGLE_DEADBAND) {
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kPosition,
+                    ClosedLoopSlot.kSlot0,
                     gravityFeedForward(getInputs().currentAngle));
-        } else{
-            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0,
+        } else {
+            angleMotorController.setReference(angleToMotorRotations(targetAngle), ControlType.kMAXMotionPositionControl,
+                    ClosedLoopSlot.kSlot0,
                     gravityFeedForward(getInputs().currentAngle));
         }
     }
@@ -133,8 +147,8 @@ public class CoralIntakeIo extends IntakeIo {
         return targetAngle.getRotations() * ANGLE_GEAR_RATIO;
     }
 
-    public Rotation2d motorRotationsToAngle(double rotations){
-        return Rotation2d.fromRotations(rotations/ANGLE_GEAR_RATIO);
+    public Rotation2d motorRotationsToAngle(double rotations) {
+        return Rotation2d.fromRotations(rotations / ANGLE_GEAR_RATIO);
     }
 
     private Rotation2d getCurrentAngle() {

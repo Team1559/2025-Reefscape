@@ -22,11 +22,17 @@ public class IntakeIo extends LoggableIo<IntakeIo.IntakeInputs> {
         super(name, new IntakeInputsAutoLogged());
     }
 
-    public void run(boolean forward) {
+    public void run(boolean forward, boolean slow) {
         if (forward) {
-            Logger.recordOutput(getOutputLogPath("State"), "Forward");
+            Logger.recordOutput(getOutputLogPath("Direction"), "Forward");
         } else {
-            Logger.recordOutput(getOutputLogPath("State"), "Reverse");
+            Logger.recordOutput(getOutputLogPath("Direction"), "Reverse");
+        }
+
+        if(slow){
+            Logger.recordOutput(getOutputLogPath("Speed"), "Slow");
+        } else{
+            Logger.recordOutput(getOutputLogPath("Speed"), "Default");
         }
     }
 

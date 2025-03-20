@@ -4,10 +4,6 @@
 
 package frc.robot;
 
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -17,24 +13,20 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
-import frc.robot.commands.AlgaeIntakeAngleCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
 import frc.robot.subsystems.Elevator2025;
@@ -42,7 +34,6 @@ import frc.robot.subsystems.Elevator2025.Level;
 import frc.robot.subsystems.SwerveDrive2025;
 import frc.robot.subsystems.Vision2025;
 import frc.robot.subsystems.climber.Climber2025;
-import frc.robot.subsystems.intake.AlgaeIntake;
 import frc.robot.subsystems.intake.CoralIntake;
 
 public class Robot extends LoggedRobot {
@@ -73,7 +64,7 @@ public class Robot extends LoggedRobot {
                 coPilotController = new CommandXboxController(1);
 
                 elevator = new Elevator2025();
-                drivetrain = new SwerveDrive2025(() -> 5 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .5));
+                drivetrain = new SwerveDrive2025(() -> 50 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .25));
                 vision = new Vision2025(drivetrain);
                 coralIntake = new CoralIntake();
                 // algaeIntake = new AlgaeIntake();
@@ -137,13 +128,13 @@ public class Robot extends LoggedRobot {
                 // NamedCommands.registerCommand("algaeReef", algaeReef);
                 // NamedCommands.registerCommand("algaeFloor", algaeFloor);
 
-                Command coralAlignFeeder = new SequentialCommandGroup(
+                Command coralAlignFeeder = new ParallelCommandGroup(
                                 elevatorFeeder, coralAngleFeeder);
-                Command coralAlignL2 = new SequentialCommandGroup(elevatorL2,
+                Command coralAlignL2 = new ParallelCommandGroup(elevatorL2,
                                 coralAngleL2);
-                Command coralAlignL3 = new SequentialCommandGroup(elevatorL3,
+                Command coralAlignL3 = new ParallelCommandGroup(elevatorL3,
                                 coralAngleL3);
-                Command coralAlignL4 = new SequentialCommandGroup(elevatorL4,
+                Command coralAlignL4 = new ParallelCommandGroup(elevatorL4,
                                 coralAngleL4);
 
                 NamedCommands.registerCommand("coralAlignFeeder", coralAlignFeeder);
@@ -158,8 +149,12 @@ public class Robot extends LoggedRobot {
                                 coralIntake);
                 Command coralOut = new StartEndCommand(() -> coralIntake.run(false), () -> coralIntake.stop(),
                                 coralIntake);
+                Command coralOutAuto = new StartEndCommand(() -> coralIntake.run(false, true), () -> coralIntake.stop(),
+                                coralIntake);
+
                 NamedCommands.registerCommand("coralIn", coralIn);
                 NamedCommands.registerCommand("coralOut", coralOut);
+                NamedCommands.registerCommand("coralOutAuto", coralOutAuto);
 
                 // Command algaeIn = new StartEndCommand(() -> algaeIntake.run(false), () ->
                 // algaeIntake.stop(),
@@ -183,7 +178,6 @@ public class Robot extends LoggedRobot {
         public void setTeleopBindings() {
                 Trigger algaeMod = coPilotController.leftTrigger();
                 Trigger robotOrientedMod = pilotController.leftTrigger();
-                // TODO: The whole implementation is a little wack
                 drivetrain.setDefaultCommand(
                                 new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                                                 () -> -nthKeepSign(pilotController.getLeftX(), 2),
@@ -246,13 +240,14 @@ public class Robot extends LoggedRobot {
                 // SWERVE_MAX_ANGULAR_VELOCITY,
                 // () -> 1 / (elevator.getHeight()),
                 // drivetrain, robotOrientedMod));
-                pilotController.leftBumper()
-                                .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
-                                                () -> -nthKeepSign(pilotController.getLeftX(), 2),
-                                                () -> -nthKeepSign(pilotController.getRightX(), 2),
-                                                SWERVE_SLOW_LINEAR_VELOCITY,
-                                                SWERVE_SLOW_ANGULAR_VELOCITY,
-                                                drivetrain, robotOrientedMod));
+                // pilotController.leftBumper()
+                // .whileTrue(new TeleopDriveCommand(() ->
+                // -nthKeepSign(pilotController.getLeftY(), 2),
+                // () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                // () -> -nthKeepSign(pilotController.getRightX(), 2),
+                // SWERVE_SLOW_LINEAR_VELOCITY,
+                // SWERVE_SLOW_ANGULAR_VELOCITY,
+                // drivetrain, robotOrientedMod));
                 // coPilotController.rightTrigger()
                 // .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () ->
                 // algaeIntake.stop(),
@@ -271,20 +266,14 @@ public class Robot extends LoggedRobot {
                 // coralIntake.stop(),
                 // coralIntake));
 
-                // coPilotController.povUp()
-                // .onTrue(new AlgaeIntakeAngleCommand(algaeIntake,
-                // AlgaeIntake.TargetAngle.PROCESSOR));
-                // coPilotController.povDown().onTrue(new AlgaeIntakeAngleCommand(algaeIntake,
-                // AlgaeIntake.TargetAngle.FLOOR));
+                coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                                CoralIntake.TargetAngle.BARGE));
+                coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                                CoralIntake.TargetAngle.L4_ANGLE));
+                coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                                CoralIntake.TargetAngle.SOURCE_ANGLE));
 
-                // coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                // CoralIntake.TargetAngle.BARGE));
-                // coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                // CoralIntake.TargetAngle.L4_ANGLE));
-                // // coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                // // CoralIntake.TargetAngle.SOURCE_ANGLE));
-
-                pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+                // pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
         }
 
         @Override
@@ -305,15 +294,23 @@ public class Robot extends LoggedRobot {
         @Override
         public void autonomousInit() {
                 // drivetrain.resetGyroAuto();
-                drivetrain.setDefaultCommand(new TeleopDriveCommand(
+                // drivetrain.setDefaultCommand(new TeleopDriveCommand(
+                // () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ?
+                // -.3 : .3,
+                // () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY,
+                // drivetrain,
+                // () -> true));
+                Command drive = new TeleopDriveCommand(
                                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ? -.3 : .3,
                                 () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain,
-                                () -> true));
-                // CommandScheduler.getInstance().schedule(new ParallelRaceGroup(
-                // new TeleopDriveCommand(() -> .1, () -> 0, () -> 0,
-                // SWERVE_MAX_LINEAR_VELOCITY,
-                // SWERVE_MAX_ANGULAR_VELOCITY, drivetrain, () -> true).until(() -> false),
-                // new WaitCommand(1)));
+                                () -> true).finallyDo((x) -> drivetrain.stopDriving());
+                // ParallelCommandGroup
+                CommandScheduler.getInstance().schedule(
+                                new SequentialCommandGroup(
+                                                new ParallelCommandGroup(drive,
+                                                                NamedCommands.getCommand("coralAlignL3"))
+                                                                .withTimeout(1.0),
+                                                NamedCommands.getCommand("coralOutAuto").withTimeout(1.0)));
         }
 
         @Override

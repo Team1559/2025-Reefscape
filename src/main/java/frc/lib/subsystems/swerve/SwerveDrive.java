@@ -74,6 +74,10 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         driveRobotOriented(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPosition().getRotation()));
     }
 
+    public void stopDriving(){
+        driveRobotOriented(new ChassisSpeeds(0, 0, 0));
+    }
+
     public void driveRobotOriented(ChassisSpeeds speeds) {
         if (maxAccel != null) {
             ChassisSpeeds currentSpeeds = getCurrentSpeed();
