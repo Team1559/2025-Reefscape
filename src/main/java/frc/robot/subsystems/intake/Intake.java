@@ -15,7 +15,11 @@ public class Intake extends LoggableSubsystem {
     }
 
     public void run(boolean forward) {
-        io.run(forward);
+        run(forward, false);
+    }
+
+    public void run(boolean forward, boolean slow){
+        io.run(forward, slow);
     }
 
     public void setAngle(Rotation2d targetAngle) {

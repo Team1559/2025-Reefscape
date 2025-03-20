@@ -18,6 +18,10 @@ public abstract class LoggableIo<T extends LoggableInputs> {
     }
 
     public void periodic() {
+        log();
+    }
+
+    private void log(){
         if (!Logger.hasReplaySource()) {
             updateInputs(inputs);    
         }    
@@ -30,6 +34,7 @@ public abstract class LoggableIo<T extends LoggableInputs> {
         }
 
         this.logPath = logPath + "/" + name;
+        log();
     }
 
     protected final String getOutputLogPath(String suffix) {
