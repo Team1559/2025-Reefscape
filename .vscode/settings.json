@@ -60,11 +60,14 @@
     "edu.wpi.first.math.**.struct.*",
   ],
   "cSpell.words": [
+    "Brushless",
     "cancoder",
     "Canivore",
     "DEADBAND",
+    "FEEDFORWARD",
     "odometry",
     "setpoint",
-    "Teleop"
+    "Teleop",
+    "WPILOG"
   ]
 }
