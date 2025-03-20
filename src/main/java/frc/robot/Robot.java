@@ -46,7 +46,6 @@ public class Robot extends LoggedRobot {
         private final Vision2025 vision;
         private final Elevator2025 elevator;
         private final CoralIntake coralIntake;
-        // private final AlgaeIntake algaeIntake;
 
         private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
         private static final double SWERVE_MAX_ANGULAR_VELOCITY = 9;
@@ -67,7 +66,6 @@ public class Robot extends LoggedRobot {
                 drivetrain = new SwerveDrive2025(() -> 50 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .25));
                 vision = new Vision2025(drivetrain);
                 coralIntake = new CoralIntake();
-                // algaeIntake = new AlgaeIntake();
                 climber = new Climber2025();
                 autoChooser = AutoBuilder.buildAutoChooser();
                 SmartDashboard.putData(autoChooser);
@@ -107,27 +105,6 @@ public class Robot extends LoggedRobot {
                 NamedCommands.registerCommand("coralAngleL3", coralAngleL3);
                 NamedCommands.registerCommand("coralAngleL4", coralAngleL4);
 
-                // Command algaeLevelTwo = new ElevatorHeightCommand2025(elevator,
-                // Level.L2_ALGAE);
-                // Command algaeLevelThree = new ElevatorHeightCommand2025(elevator,
-                // Level.L3_ALGAE);
-                // Command algaeDown = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
-
-                // NamedCommands.registerCommand("algaeL2", algaeLevelTwo);
-                // NamedCommands.registerCommand("algaeL3", algaeLevelThree);
-                // NamedCommands.registerCommand("algaeDown", algaeDown);
-
-                // Supplier<Command> algaeStow = () -> new AlgaeIntakeAngleCommand(algaeIntake,
-                // AlgaeIntake.TargetAngle.STOWED);
-                // Command algaeReef = new AlgaeIntakeAngleCommand(algaeIntake,
-                // AlgaeIntake.TargetAngle.REEF);
-                // Command algaeFloor = new AlgaeIntakeAngleCommand(algaeIntake,
-                // AlgaeIntake.TargetAngle.FLOOR);
-
-                // NamedCommands.registerCommand("algaeStow", algaeStow.get());
-                // NamedCommands.registerCommand("algaeReef", algaeReef);
-                // NamedCommands.registerCommand("algaeFloor", algaeFloor);
-
                 Command coralAlignFeeder = new ParallelCommandGroup(
                                 elevatorFeeder, coralAngleFeeder);
                 Command coralAlignL2 = new ParallelCommandGroup(elevatorL2,
@@ -155,15 +132,6 @@ public class Robot extends LoggedRobot {
                 NamedCommands.registerCommand("coralIn", coralIn);
                 NamedCommands.registerCommand("coralOut", coralOut);
                 NamedCommands.registerCommand("coralOutAuto", coralOutAuto);
-
-                // Command algaeIn = new StartEndCommand(() -> algaeIntake.run(false), () ->
-                // algaeIntake.stop(),
-                // algaeIntake);
-                // Command algaeOut = new StartEndCommand(() -> algaeIntake.run(true), () ->
-                // algaeIntake.stop(),
-                // algaeIntake);
-                // NamedCommands.registerCommand("algaeIn", algaeIn);
-                // NamedCommands.registerCommand("algaeOut", algaeOut);
 
                 Command elevatorHome = new InstantCommand(
                                 () -> elevator.goHome(),
@@ -200,22 +168,8 @@ public class Robot extends LoggedRobot {
                 coPilotController.x().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL3"));
                 coPilotController.y().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignL4"));
 
-                // //
-                // coPilotController.a().and(algaeMod).onTrue(NamedCommands.getCommand("algaeDown"));
-                // //
-                // coPilotController.b().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL2"));
-                // //
-                // coPilotController.x().and(algaeMod).onTrue(NamedCommands.getCommand("algaeL3"));
-
                 coPilotController.rightTrigger().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralIn"));
                 coPilotController.rightBumper().and(algaeMod.negate()).whileTrue(NamedCommands.getCommand("coralOut"));
-
-                // coPilotController.rightTrigger().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeIn"));
-                // coPilotController.rightBumper().and(algaeMod).whileTrue(NamedCommands.getCommand("algaeOut"));
-
-                // coPilotController.povUp().onTrue(NamedCommands.getCommand("algaeStow"));
-                // coPilotController.povDown().onTrue(NamedCommands.getCommand("algaeFloor"));
-                // coPilotController.povRight().onTrue(NamedCommands.getCommand("algaeReef"));
         }
 
         public void setTestBindings() {
@@ -248,15 +202,7 @@ public class Robot extends LoggedRobot {
                 // SWERVE_SLOW_LINEAR_VELOCITY,
                 // SWERVE_SLOW_ANGULAR_VELOCITY,
                 // drivetrain, robotOrientedMod));
-                // coPilotController.rightTrigger()
-                // .whileTrue(new StartEndCommand(() -> algaeIntake.run(false), () ->
-                // algaeIntake.stop(),
-                // algaeIntake));
-                // coPilotController.rightBumper()
-                // .whileTrue(new StartEndCommand(() -> algaeIntake.run(true), () ->
-                // algaeIntake.stop(),
-                // algaeIntake));
-
+                
                 // coPilotController.leftTrigger()
                 // .whileTrue(new StartEndCommand(() -> coralIntake.run(false), () ->
                 // coralIntake.stop(),
