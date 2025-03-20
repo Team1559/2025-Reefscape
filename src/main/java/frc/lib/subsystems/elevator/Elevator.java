@@ -41,4 +41,8 @@ public class Elevator extends LoggableSubsystem {
     public boolean isHome() {
         return io.getInputs().isHome;
     }
+
+    public double getHeight(){
+        return io.getInputs().currentPosition;
+    }
 }

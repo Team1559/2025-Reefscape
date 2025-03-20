@@ -1,5 +1,6 @@
 package frc.lib.subsystems.swerve;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -10,6 +11,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -36,11 +38,13 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private final SwerveDrivePoseEstimator estimator;
     private final GyroIo gyro;
     private final Translation2d[] locations;
+    public final DoubleSupplier maxAccel;
 
-    public SwerveDrive(String name, GyroIo gyro, SwerveModuleIo... modules) {
+    public SwerveDrive(String name, GyroIo gyro, DoubleSupplier maxAccel, SwerveModuleIo... modules) {
         super(name);
         this.gyro = gyro;
         this.modules = modules;
+        this.maxAccel = maxAccel;
         Translation2d[] locations = new Translation2d[modules.length];
         SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
         for (int i = 0; i < locations.length; i++) {
@@ -52,7 +56,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         addIo(gyro, "Gyro");
         this.locations = locations;
         this.kinematics = new SwerveDriveKinematics(locations);
-        this.estimator = new SwerveDrivePoseEstimator(kinematics, new Rotation2d(), positions, new Pose2d());
+        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, new Pose2d());
         // TODO: make constants
     }
 
@@ -70,7 +74,22 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         driveRobotOriented(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPosition().getRotation()));
     }
 
+    public void stopDriving(){
+        driveRobotOriented(new ChassisSpeeds(0, 0, 0));
+    }
+
     public void driveRobotOriented(ChassisSpeeds speeds) {
+        if (maxAccel != null) {
+            ChassisSpeeds currentSpeeds = getCurrentSpeed();
+            double step = maxAccel.getAsDouble() *.02;
+            double currentXVelocity = currentSpeeds.vxMetersPerSecond;
+            double currentYVelocity = currentSpeeds.vyMetersPerSecond;
+
+            speeds.vxMetersPerSecond = MathUtil.clamp(speeds.vxMetersPerSecond, currentXVelocity - step,
+                    currentXVelocity + step);
+            speeds.vyMetersPerSecond = MathUtil.clamp(speeds.vyMetersPerSecond, currentYVelocity - step,
+                    currentYVelocity + step);
+        }
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
         for (int i = 0; i < modules.length; i++) {
             states[i].optimize(modules[i].getInputs().angle);
@@ -83,7 +102,6 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public ChassisSpeeds getCurrentSpeed() {
-
         SwerveModuleState[] states = new SwerveModuleState[modules.length];
         for (int i = 0; i < states.length; i++) {
             SwerveInputs inputs = modules[i].getInputs();
@@ -104,7 +122,6 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     public void addVisionMeasurement(Pose2d estimatedPose2d, double timestamp, Matrix<N3, N1> standardDeviation) {
         estimator.addVisionMeasurement(estimatedPose2d, timestamp, standardDeviation);
     }
-    
 
     @Override
     public void periodic() {
@@ -124,10 +141,10 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private void log() {
         Logger.recordOutput(getLogPath("EstimatedPosition"), getPosition());
         Logger.recordOutput(getLogPath("Heading"), gyro.getInputs().yaw);
+        Logger.recordOutput(getLogPath("TargetVelocity"), getCurrentSpeed());
         // Logger.recordOutput(getName() + "/distanceToTag19",
         // getPosition().getTranslation().minus(new
         // Translation2d(4.074,4.745)).getNorm());
         // TODO: Just for testing :p
     }
-
 }
