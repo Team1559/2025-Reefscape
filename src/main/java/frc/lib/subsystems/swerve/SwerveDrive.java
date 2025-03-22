@@ -145,16 +145,19 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         Rotation2d currentRotationalVelocity = Rotation2d.fromRadians(currentChassisSpeeds.omegaRadiansPerSecond);
         
         Rotation2d targetRotationalVelocity = Rotation2d.fromRadians(targetSpeed.omegaRadiansPerSecond);
-        Rotation2d targetRotationalAcceleration = targetRotationalVelocity.minus(currentRotationalVelocity).div(ROBOT_PERIOD);
-        if (targetRotationalAcceleration.getRadians() >maxRotationalAcceleration.getRadians()) {
-            if (targetRotationalAcceleration.getRadians() > 0) {
-                targetRotationalAcceleration = maxRotationalAcceleration;
-            } else {
-                targetRotationalAcceleration = maxRotationalAcceleration.times(-1);
-            }
-        }
-        targetRotationalVelocity = currentRotationalVelocity.plus(targetRotationalAcceleration.times(ROBOT_PERIOD));
+        // Rotation2d targetRotationalAcceleration = targetRotationalVelocity.minus(currentRotationalVelocity).div(ROBOT_PERIOD);
+        // if (targetRotationalAcceleration.getRadians() >maxRotationalAcceleration.getRadians()) {
+        //     if (targetRotationalAcceleration.getRadians() > 0) {
+        //         targetRotationalAcceleration = maxRotationalAcceleration;
+        //     } else {
+        //         targetRotationalAcceleration = maxRotationalAcceleration.times(-1);
+        //     }
+        // }
+        // targetRotationalVelocity = currentRotationalVelocity.plus(targetRotationalAcceleration.times(ROBOT_PERIOD));
 
+        Logger.recordOutput(getLogPath("TargetLinearVelocity"), targetLinearVelocity);
+        Logger.recordOutput(getLogPath("TargetRotationalVelocity"), targetRotationalVelocity);
+        
         ChassisSpeeds accelLimitedSpeeds = new ChassisSpeeds(targetLinearVelocity.getX(), targetLinearVelocity.getY(), targetRotationalVelocity.getRadians());
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(accelLimitedSpeeds);
         for (int i = 0; i < modules.length; i++) {
