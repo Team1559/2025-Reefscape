@@ -60,7 +60,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         }
         addIo(gyro, "Gyro");
         this.kinematics = new SwerveDriveKinematics(locations);
-        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, new Pose2d());
+        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue? new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)): new Pose2d()); //Changed the initial rotation
     }
 
     public void configureAuto(RobotConfig robotConfig) {
