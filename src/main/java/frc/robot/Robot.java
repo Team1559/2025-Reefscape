@@ -12,6 +12,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -51,6 +52,9 @@ public class Robot extends LoggedRobot {
         private static final double SWERVE_MAX_ANGULAR_VELOCITY = 9;
         private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 8;
         private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 8;
+
+        private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .25;
+
         private final Climber2025 climber;
 
         public Robot() {
@@ -63,7 +67,7 @@ public class Robot extends LoggedRobot {
                 coPilotController = new CommandXboxController(1);
 
                 elevator = new Elevator2025();
-                drivetrain = new SwerveDrive2025(() -> 50 * (1 - (elevator.getHeight() / Level.L4_CORAL.height) * .25));
+                drivetrain = new SwerveDrive2025();
                 vision = new Vision2025(drivetrain);
                 coralIntake = new CoralIntake();
                 climber = new Climber2025();
@@ -81,11 +85,17 @@ public class Robot extends LoggedRobot {
                 // Command resetGyro = new InstantCommand(drivetrain::resetGyroDriver);
                 // NamedCommands.registerCommand("resetGyroDriver", resetGyro);
 
-                Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL);
-                Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL);
-                Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL);
-                Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL);
-                Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER);
+                InstantCommand limitAccelL1 = new InstantCommand((() -> drivetrain.setAccelerationLimits(50 * (1 - (Level.L1_CORAL.height / Level.L4_CORAL.height) * .25), Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL))));
+                InstantCommand limitAccelL2 = new InstantCommand((() -> drivetrain.setAccelerationLimits(50 * (1 - (Level.L2_CORAL.height / Level.L4_CORAL.height) * .25), Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL))));
+                InstantCommand limitAccelL3 = new InstantCommand((() -> drivetrain.setAccelerationLimits(50 * (1 - (Level.L3_CORAL.height / Level.L4_CORAL.height) * .25), Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL))));
+                InstantCommand limitAccelL4 = new InstantCommand((() -> drivetrain.setAccelerationLimits(50 * (1 - (Level.L4_CORAL.height / Level.L4_CORAL.height) * .25), Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL))));
+                InstantCommand limitAccelFeeder = new InstantCommand((() -> drivetrain.setAccelerationLimits(50 * (1 - (Level.FEEDER.height / Level.L4_CORAL.height) * .25), Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL))));
+
+                Command elevatorL1 = new ElevatorHeightCommand2025(elevator, Level.L1_CORAL).alongWith(limitAccelL1);
+                Command elevatorL2 = new ElevatorHeightCommand2025(elevator, Level.L2_CORAL).alongWith(limitAccelL2);
+                Command elevatorL3 = new ElevatorHeightCommand2025(elevator, Level.L3_CORAL).alongWith(limitAccelL3);
+                Command elevatorL4 = new ElevatorHeightCommand2025(elevator, Level.L4_CORAL).alongWith(limitAccelL4);
+                Command elevatorFeeder = new ElevatorHeightCommand2025(elevator, Level.FEEDER).alongWith(limitAccelFeeder);
 
                 NamedCommands.registerCommand("elevatorL1", elevatorL1);
                 NamedCommands.registerCommand("elevatorL2", elevatorL2);

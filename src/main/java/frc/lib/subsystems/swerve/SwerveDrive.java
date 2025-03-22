@@ -1,5 +1,6 @@
 package frc.lib.subsystems.swerve;
 
+import java.lang.annotation.ElementType;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -37,14 +38,18 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDrivePoseEstimator estimator;
     private final GyroIo gyro;
-    private final Translation2d[] locations;
-    public final DoubleSupplier maxAccel;
 
-    public SwerveDrive(String name, GyroIo gyro, DoubleSupplier maxAccel, SwerveModuleIo... modules) {
+    private double maxLinearAcceleration = Double.POSITIVE_INFINITY;
+    private Rotation2d maxRotationalAcceleration = Rotation2d.fromRadians(Double.POSITIVE_INFINITY);
+
+    private ChassisSpeeds targetSpeed = new ChassisSpeeds();
+
+    private final double ROBOT_PERIOD = 0.02; 
+
+    public SwerveDrive(String name, GyroIo gyro, SwerveModuleIo... modules) {
         super(name);
         this.gyro = gyro;
         this.modules = modules;
-        this.maxAccel = maxAccel;
         Translation2d[] locations = new Translation2d[modules.length];
         SwerveModulePosition[] positions = new SwerveModulePosition[modules.length];
         for (int i = 0; i < locations.length; i++) {
@@ -54,18 +59,13 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
             addIo(modules[i], "Modules");
         }
         addIo(gyro, "Gyro");
-        this.locations = locations;
         this.kinematics = new SwerveDriveKinematics(locations);
         this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, new Pose2d());
-        // TODO: make constants
     }
 
-    public void configureAuto(double massKg, double Moi) {
-        RobotConfig config = new RobotConfig(23.2, 1682/* FIXME : probably wrong */,
-                new ModuleConfig(0.0508, 6.0, 1.0, DCMotor.getKrakenX60(1), 80.0, 1), locations);
-
+    public void configureAuto(RobotConfig robotConfig) {
         AutoBuilder.configure(this::getPosition, this::resetPose, this::getCurrentSpeed, this::driveRobotOriented,
-                new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)), config,
+                new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)), robotConfig,
                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
                 this);// TODO: output
     }
@@ -74,31 +74,20 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         driveRobotOriented(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPosition().getRotation()));
     }
 
-    public void stopDriving(){
+    public void stopDriving() {
         driveRobotOriented(new ChassisSpeeds(0, 0, 0));
     }
 
     public void driveRobotOriented(ChassisSpeeds speeds) {
-        if (maxAccel != null) {
-            ChassisSpeeds currentSpeeds = getCurrentSpeed();
-            double step = maxAccel.getAsDouble() *.02;
-            double currentXVelocity = currentSpeeds.vxMetersPerSecond;
-            double currentYVelocity = currentSpeeds.vyMetersPerSecond;
-
-            speeds.vxMetersPerSecond = MathUtil.clamp(speeds.vxMetersPerSecond, currentXVelocity - step,
-                    currentXVelocity + step);
-            speeds.vyMetersPerSecond = MathUtil.clamp(speeds.vyMetersPerSecond, currentYVelocity - step,
-                    currentYVelocity + step);
-        }
-        SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-        for (int i = 0; i < modules.length; i++) {
-            states[i].optimize(modules[i].getInputs().angle);
-            modules[i].setState(states[i]);
-        }
+        targetSpeed = speeds;
     }
 
     public Pose2d getPosition() {
         return estimator.getEstimatedPosition();
+    }
+
+    protected SwerveModuleIo[] getModules() {
+        return modules.clone();
     }
 
     public ChassisSpeeds getCurrentSpeed() {
@@ -119,6 +108,11 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         return positions;
     }
 
+    public void setAccelerationLimits(double maxLinearAcceleration, Rotation2d maxRotationalAcceleration) {
+        this.maxLinearAcceleration = maxLinearAcceleration;
+        this.maxRotationalAcceleration = maxRotationalAcceleration;
+    }
+
     public void addVisionMeasurement(Pose2d estimatedPose2d, double timestamp, Matrix<N3, N1> standardDeviation) {
         estimator.addVisionMeasurement(estimatedPose2d, timestamp, standardDeviation);
     }
@@ -126,12 +120,47 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     @Override
     public void periodic() {
         super.periodic();
+        drive();
         updateOdometry();
         log();
     }
 
     private void updateOdometry() {
         estimator.update(gyro.getInputs().yaw, getModulePositions());
+    }
+
+    private void drive() {
+        ChassisSpeeds currentChassisSpeeds = getCurrentSpeed();
+        
+        Translation2d currentLinearVelocity = new Translation2d(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond);
+        Translation2d targetLinearVelocity = new Translation2d(targetSpeed.vxMetersPerSecond, targetSpeed.vyMetersPerSecond);
+        Translation2d targetLinearAcceleration = targetLinearVelocity.minus(currentLinearVelocity).div(ROBOT_PERIOD);
+
+        if (targetLinearAcceleration.getNorm() > maxLinearAcceleration) {
+            targetLinearAcceleration = targetLinearAcceleration.div(targetLinearAcceleration.getNorm()).times(maxLinearAcceleration);
+        }
+
+        targetLinearVelocity = currentLinearVelocity.plus(targetLinearAcceleration.times(ROBOT_PERIOD));
+        
+        Rotation2d currentRotationalVelocity = Rotation2d.fromRadians(currentChassisSpeeds.omegaRadiansPerSecond);
+        
+        Rotation2d targetRotationalVelocity = Rotation2d.fromRadians(targetSpeed.omegaRadiansPerSecond);
+        Rotation2d targetRotationalAcceleration = targetRotationalVelocity.minus(currentRotationalVelocity).div(ROBOT_PERIOD);
+        if (targetRotationalAcceleration.getRadians() >maxRotationalAcceleration.getRadians()) {
+            if (targetRotationalAcceleration.getRadians() > 0) {
+                targetRotationalAcceleration = maxRotationalAcceleration;
+            } else {
+                targetRotationalAcceleration = maxRotationalAcceleration.times(-1);
+            }
+        }
+        targetRotationalVelocity = currentRotationalVelocity.plus(targetRotationalAcceleration.times(ROBOT_PERIOD));
+
+        ChassisSpeeds accelLimitedSpeeds = new ChassisSpeeds(targetLinearVelocity.getX(), targetLinearVelocity.getY(), targetRotationalVelocity.getRadians());
+        SwerveModuleState[] states = kinematics.toSwerveModuleStates(accelLimitedSpeeds);
+        for (int i = 0; i < modules.length; i++) {
+            states[i].optimize(modules[i].getInputs().angle);
+            modules[i].setState(states[i]);
+        }
     }
 
     public void resetPose(Pose2d pose) {
@@ -147,4 +176,5 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         // Translation2d(4.074,4.745)).getNorm());
         // TODO: Just for testing :p
     }
+
 }

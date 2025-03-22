@@ -1,14 +1,18 @@
 package frc.robot.subsystems;
 
+import java.util.Random;
 import java.util.function.DoubleSupplier;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.lib.components.gyro.GyroIo;
 import frc.lib.components.gyro.Pigeon2Io;
@@ -19,12 +23,21 @@ import frc.lib.subsystems.swerve.SwerveModuleIo;
 
 public class SwerveDrive2025 extends SwerveDrive {
     private static final String canivoreBusName = "1559_Canivore";
-    private static final double MASS = 23.2;
-    private static final double MOI = 8;
+    private static final double MASS = Units.lbsToKilograms(132);
+    private static final double RADIUS = Units.inchesToMeters(15); //Give or take
+    private static final double MOI = MASS * RADIUS * RADIUS;
 
-    public SwerveDrive2025(DoubleSupplier maxAccel) {
-        super("SwerveDrive", createGyro(), maxAccel, createModules());
-        configureAuto(MASS, MOI);
+    public SwerveDrive2025() {
+        super("SwerveDrive", createGyro(), createModules());
+
+        SwerveModuleIo[] modules = getModules();
+        Translation2d[] locations = new Translation2d[modules.length];
+        for (int i = 0; i < locations.length; i++) {
+                locations[i] = modules[i].getLocation();
+        }
+        RobotConfig config = new RobotConfig(MASS, MOI,
+                new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1), locations);
+        configureAuto(config);
     }
 
     private static SwerveModuleIo createSwerveModule(String name, int steerMotorId, int driveMotorId,
