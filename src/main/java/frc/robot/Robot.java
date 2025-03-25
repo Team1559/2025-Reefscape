@@ -51,8 +51,8 @@ public class Robot extends LoggedRobot {
 
     private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
     private static final double SWERVE_MAX_ANGULAR_VELOCITY = 18;
-    private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 8;
-    private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 8;
+    private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 6;
+    private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 6;
 
     private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .01;
 
@@ -188,14 +188,14 @@ public class Robot extends LoggedRobot {
                         SWERVE_MAX_LINEAR_VELOCITY,
                         SWERVE_MAX_ANGULAR_VELOCITY,
                         drivetrain, robotOrientedMod));
-        pilotController.leftBumper()
+        pilotController.rightTrigger()
                 .whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                         () -> -nthKeepSign(pilotController.getLeftX(), 2),
                         () -> -nthKeepSign(pilotController.getRightX(), 2),
                         SWERVE_SLOW_LINEAR_VELOCITY,
                         SWERVE_SLOW_ANGULAR_VELOCITY,
                         drivetrain, robotOrientedMod));
-        pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
+        pilotController.rightBumper().whileTrue(NamedCommands.getCommand("climb"));
         pilotController.a().onTrue(NamedCommands.getCommand("resetGyroDriver"));
 
         coPilotController.a().and(algaeMod.negate()).onTrue(NamedCommands.getCommand("coralAlignFeeder"));
