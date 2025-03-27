@@ -44,7 +44,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
 
     private ChassisSpeeds targetSpeed = new ChassisSpeeds();
 
-    private final double ROBOT_PERIOD = 0.02; 
+    private final double ROBOT_PERIOD = 0.02;
 
     public SwerveDrive(String name, GyroIo gyro, SwerveModuleIo... modules) {
         super(name);
@@ -60,7 +60,10 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         }
         addIo(gyro, "Gyro");
         this.kinematics = new SwerveDriveKinematics(locations);
-        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions, DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue? new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)): new Pose2d()); //Changed the initial rotation
+        this.estimator = new SwerveDrivePoseEstimator(kinematics, gyro.getInputs().yaw, positions,
+                DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
+                        ? new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180))
+                        : new Pose2d()); // Changed the initial rotation
     }
 
     public void configureAuto(RobotConfig robotConfig) {
@@ -83,7 +86,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public Pose2d getPosition() {
-        return estimator.getEstimatedPosition();
+        return estimator.getEstimatedPosition() == null? new Pose2d() : estimator.getEstimatedPosition(); //FIXME: idk man
     }
 
     protected SwerveModuleIo[] getModules() {
@@ -131,34 +134,41 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
 
     private void drive() {
         ChassisSpeeds currentChassisSpeeds = getCurrentSpeed();
-        
-        Translation2d currentLinearVelocity = new Translation2d(currentChassisSpeeds.vxMetersPerSecond, currentChassisSpeeds.vyMetersPerSecond);
-        Translation2d targetLinearVelocity = new Translation2d(targetSpeed.vxMetersPerSecond, targetSpeed.vyMetersPerSecond);
+
+        Translation2d currentLinearVelocity = new Translation2d(currentChassisSpeeds.vxMetersPerSecond,
+                currentChassisSpeeds.vyMetersPerSecond);
+        Translation2d targetLinearVelocity = new Translation2d(targetSpeed.vxMetersPerSecond,
+                targetSpeed.vyMetersPerSecond);
         Translation2d targetLinearAcceleration = targetLinearVelocity.minus(currentLinearVelocity).div(ROBOT_PERIOD);
 
         if (targetLinearAcceleration.getNorm() > maxLinearAcceleration) {
-            targetLinearAcceleration = targetLinearAcceleration.div(targetLinearAcceleration.getNorm()).times(maxLinearAcceleration);
+            targetLinearAcceleration = targetLinearAcceleration.div(targetLinearAcceleration.getNorm())
+                    .times(maxLinearAcceleration);
         }
 
         targetLinearVelocity = currentLinearVelocity.plus(targetLinearAcceleration.times(ROBOT_PERIOD));
-        
+
         Rotation2d currentRotationalVelocity = Rotation2d.fromRadians(currentChassisSpeeds.omegaRadiansPerSecond);
-        
+
         Rotation2d targetRotationalVelocity = Rotation2d.fromRadians(targetSpeed.omegaRadiansPerSecond);
-        // Rotation2d targetRotationalAcceleration = targetRotationalVelocity.minus(currentRotationalVelocity).div(ROBOT_PERIOD);
-        // if (targetRotationalAcceleration.getRadians() >maxRotationalAcceleration.getRadians()) {
-        //     if (targetRotationalAcceleration.getRadians() > 0) {
-        //         targetRotationalAcceleration = maxRotationalAcceleration;
-        //     } else {
-        //         targetRotationalAcceleration = maxRotationalAcceleration.times(-1);
-        //     }
+        // Rotation2d targetRotationalAcceleration =
+        // targetRotationalVelocity.minus(currentRotationalVelocity).div(ROBOT_PERIOD);
+        // if (targetRotationalAcceleration.getRadians()
+        // >maxRotationalAcceleration.getRadians()) {
+        // if (targetRotationalAcceleration.getRadians() > 0) {
+        // targetRotationalAcceleration = maxRotationalAcceleration;
+        // } else {
+        // targetRotationalAcceleration = maxRotationalAcceleration.times(-1);
         // }
-        // targetRotationalVelocity = currentRotationalVelocity.plus(targetRotationalAcceleration.times(ROBOT_PERIOD));
+        // }
+        // targetRotationalVelocity =
+        // currentRotationalVelocity.plus(targetRotationalAcceleration.times(ROBOT_PERIOD));
 
         Logger.recordOutput(getLogPath("TargetLinearVelocity"), targetLinearVelocity);
         Logger.recordOutput(getLogPath("TargetRotationalVelocity"), targetRotationalVelocity);
-        
-        ChassisSpeeds accelLimitedSpeeds = new ChassisSpeeds(targetLinearVelocity.getX(), targetLinearVelocity.getY(), targetRotationalVelocity.getRadians());
+
+        ChassisSpeeds accelLimitedSpeeds = new ChassisSpeeds(targetLinearVelocity.getX(), targetLinearVelocity.getY(),
+                targetRotationalVelocity.getRadians());
         SwerveModuleState[] states = kinematics.toSwerveModuleStates(accelLimitedSpeeds);
         for (int i = 0; i < modules.length; i++) {
             states[i].optimize(modules[i].getInputs().angle);
@@ -167,7 +177,9 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public void resetPose(Pose2d pose) {
-        estimator.resetPose(pose);
+        if (pose != null) {
+            estimator.resetPose(pose);
+        }
     }
 
     private void log() {

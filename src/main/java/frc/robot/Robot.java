@@ -14,6 +14,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 
 import edu.wpi.first.math.DARE;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -266,8 +267,13 @@ public class Robot extends LoggedRobot {
         // // ParallelCommandGroup
         // drivetrain.setAccelerationLimits(5, new Rotation2d());
         // CommandScheduler.getInstance().schedule(NamedCommands.getCommand("runAutoL4"));
-        System.out.println(autoChooser.getSelected().getName());
-        autoChooser.getSelected().schedule();
+
+        //Does not work
+        // System.out.println(autoChooser.getSelected().getName());
+        // autoChooser.getSelected().schedule();
+
+        // Works
+        new PathPlannerAuto("a").schedule();
     }
 
     @Override
