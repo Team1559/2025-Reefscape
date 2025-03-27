@@ -78,7 +78,9 @@ public class Robot extends LoggedRobot {
         vision = new Vision2025(drivetrain);
         coralIntake = new CoralIntake();
         climber = new Climber2025();
-        autoChooser = AutoBuilder.buildAutoChooser();
+
+        registerNamedCommands();
+        autoChooser = AutoBuilder.buildAutoChooser("a");
         SmartDashboard.putData(autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
@@ -88,7 +90,7 @@ public class Robot extends LoggedRobot {
         CommandScheduler.getInstance().getActiveButtonLoop().clear();
     }
 
-    public void setNamedCommands(){
+    public void registerNamedCommands() {
         NamedCommands.registerCommand("print", new PrintCommand("printed"));
     }
 
@@ -131,7 +133,7 @@ public class Robot extends LoggedRobot {
     }
 
     public Command coralIn() {
-        return new StartEndCommand(() ->coralIntake.run(true), () -> coralIntake.stop(), coralIntake);
+        return new StartEndCommand(() -> coralIntake.run(true), () -> coralIntake.stop(), coralIntake);
     }
 
     public Command coralOut() {
@@ -241,7 +243,6 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        setNamedCommands();
     }
 
     @Override
@@ -268,12 +269,26 @@ public class Robot extends LoggedRobot {
         // drivetrain.setAccelerationLimits(5, new Rotation2d());
         // CommandScheduler.getInstance().schedule(NamedCommands.getCommand("runAutoL4"));
 
-        //Does not work
-        // System.out.println(autoChooser.getSelected().getName());
-        // autoChooser.getSelected().schedule();
-
         // Works
-        new PathPlannerAuto("a").schedule();
+        Command autoCommand = autoChooser.getSelected();
+        System.out.println(autoCommand.getName());// -> a
+        System.out.println(autoCommand.getClass());// -> class com.pathplanner.lib.commands.PathPlannerAuto
+        System.out.println(autoCommand.getInterruptionBehavior());// -> kCancelSelf
+        System.out.println(autoCommand.getRequirements());// -> []
+        autoCommand.schedule();
+        System.out.println(CommandScheduler.getInstance().isScheduled(autoCommand));// -> true
+
+        // Also Works
+        // Command autoCommand = new
+        // PathPlannerAuto(autoChooser.getSelected().getName());
+        // System.out.println(autoCommand.getName());// -> a
+        // System.out.println(autoCommand.getClass());// -> class
+        // com.pathplanner.lib.commands.PathPlannerAuto
+        // System.out.println(autoCommand.getInterruptionBehavior());// -> kCancelSelf
+        // System.out.println(autoCommand.getRequirements());// -> []
+        // autoCommand.schedule();// -> printed (command output)
+        // System.out.println(CommandScheduler.getInstance().isScheduled(autoCommand));//->
+        // true
     }
 
     @Override
