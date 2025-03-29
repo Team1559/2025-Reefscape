@@ -28,6 +28,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.lib.components.gyro.GyroIo;
 import frc.lib.subsystems.LoggableSubsystem;
 import frc.lib.subsystems.swerve.SwerveModuleIo.SwerveInputs;
@@ -38,6 +40,8 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     private final SwerveDriveKinematics kinematics;
     private final SwerveDrivePoseEstimator estimator;
     private final GyroIo gyro;
+
+    private final Field2d field;    
 
     private double maxLinearAcceleration = Double.POSITIVE_INFINITY;
     private Rotation2d maxRotationalAcceleration = Rotation2d.fromRadians(Double.POSITIVE_INFINITY);
@@ -64,6 +68,9 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
                 DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue
                         ? new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180))
                         : new Pose2d()); // Changed the initial rotation
+
+        field =  new Field2d();
+        SmartDashboard.putData("Field", field);
     }
 
     public void configureAuto(RobotConfig robotConfig) {
@@ -186,6 +193,8 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         Logger.recordOutput(getLogPath("EstimatedPosition"), getPosition());
         Logger.recordOutput(getLogPath("Heading"), gyro.getInputs().yaw);
         Logger.recordOutput(getLogPath("TargetVelocity"), getCurrentSpeed());
+
+        field.setRobotPose(getPosition());
         // Logger.recordOutput(getName() + "/distanceToTag19",
         // getPosition().getTranslation().minus(new
         // Translation2d(4.074,4.745)).getNorm());

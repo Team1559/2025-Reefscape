@@ -18,12 +18,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.subsystems.Leds;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
@@ -45,6 +47,8 @@ public class Robot extends LoggedRobot {
     private final Vision2025 vision;
     private final Elevator2025 elevator;
     private final CoralIntake coralIntake;
+    private final Climber2025 climber;
+    private final Leds leds;
 
     private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
     private static final double SWERVE_MAX_ANGULAR_VELOCITY = 18;
@@ -53,7 +57,6 @@ public class Robot extends LoggedRobot {
 
     private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .01;
 
-    private final Climber2025 climber;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -69,6 +72,7 @@ public class Robot extends LoggedRobot {
         vision = new Vision2025(drivetrain);
         coralIntake = new CoralIntake();
         climber = new Climber2025();
+        leds = new Leds(0, 68);
 
         registerNamedCommands();
         autoChooser = AutoBuilder.buildAutoChooser("a");
@@ -86,6 +90,8 @@ public class Robot extends LoggedRobot {
 
     public void registerNamedCommands() {
         NamedCommands.registerCommand("print", new PrintCommand("printed"));
+        NamedCommands.registerCommand("alignL4", coralAlignL4());
+        NamedCommands.registerCommand("coralOutAuto", coralOutSlow());
     }
 
     public Command limitAccel(Level level, boolean slow) {
@@ -160,8 +166,11 @@ public class Robot extends LoggedRobot {
     }
 
     public void setTeleopBindings() {
+        //Pilot modifier buttons
         Trigger robotOrientedMod = pilotController.leftTrigger();
         Trigger slowMod = pilotController.rightTrigger();
+
+        //Pilot controls
         drivetrain.setDefaultCommand(
                 new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                         () -> -nthKeepSign(pilotController.getLeftX(), 2),
@@ -177,6 +186,7 @@ public class Robot extends LoggedRobot {
                 drivetrain, robotOrientedMod));
         pilotController.rightBumper().whileTrue(climb());
 
+        //Copilot controls
         coPilotController.a().onTrue(coralAlignFeeder().alongWith(limitAccel(Level.FEEDER, slowMod.getAsBoolean())));
         coPilotController.b().onTrue(coralAlignL2().alongWith(limitAccel(Level.L2_CORAL, slowMod.getAsBoolean())));
         coPilotController.x().onTrue(coralAlignL3().alongWith(limitAccel(Level.L3_CORAL, slowMod.getAsBoolean())));
@@ -236,6 +246,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
+        leds.setProgressSupplier(()->elevator.getHeight() / Level.L4_CORAL.height);
     }
 
     @Override
@@ -254,10 +265,10 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-        // FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
-        // }, (b) -> {
-        // }, elevator::isHome, elevator);
-        // CommandScheduler.getInstance().schedule(goToZero);
+        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+        }, (b) -> {
+        }, elevator::isHome, elevator);
+        CommandScheduler.getInstance().schedule(goToZero);
 
         clearCommandBindings();
         setTeleopBindings();
