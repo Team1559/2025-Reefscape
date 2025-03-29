@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import java.util.Random;
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;

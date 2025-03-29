@@ -86,7 +86,7 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
     }
 
     public Pose2d getPosition() {
-        return estimator.getEstimatedPosition() == null? new Pose2d() : estimator.getEstimatedPosition(); //FIXME: idk man
+        return estimator.getEstimatedPosition();
     }
 
     protected SwerveModuleIo[] getModules() {

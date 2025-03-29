@@ -1,6 +1,5 @@
 package frc.lib.subsystems.elevator;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.subsystems.LoggableSubsystem;
 import frc.lib.subsystems.elevator.ElevatorIo.ElevatorInputs;
 

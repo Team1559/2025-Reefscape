@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import java.lang.annotation.Target;
-import java.util.jar.Attributes.Name;
-
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -14,21 +11,15 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
 
-import edu.wpi.first.math.DARE;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -81,7 +72,10 @@ public class Robot extends LoggedRobot {
 
         registerNamedCommands();
         autoChooser = AutoBuilder.buildAutoChooser("a");
+        autoChooser.addOption("Pathplannerless Leave", autoDrive());
+        autoChooser.addOption("Pathplannerless L4", autoL4());
         SmartDashboard.putData(autoChooser);
+    
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -160,7 +154,7 @@ public class Robot extends LoggedRobot {
                 () -> true).finallyDo((x) -> drivetrain.stopDriving());
     }
 
-    public Command runAutoL4() {
+    public Command autoL4() {
         return autoDrive().alongWith(coralAlignL4()).withTimeout(2).andThen(new WaitCommand(1.5))
                 .andThen(coralOutSlow().withTimeout(1));
     }
@@ -238,7 +232,6 @@ public class Robot extends LoggedRobot {
                 CoralIntake.TargetAngle.L4_ANGLE));
         coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
                 CoralIntake.TargetAngle.SOURCE_ANGLE));
-        // pilotController.rightTrigger().whileTrue(NamedCommands.getCommand("climb"));
     }
 
     @Override
@@ -254,41 +247,9 @@ public class Robot extends LoggedRobot {
     public void disabledInit() {
         CommandScheduler.getInstance().cancelAll();
     }
-
     @Override
     public void autonomousInit() {
-        // drivetrain.resetGyroAuto();
-        // drivetrain.setDefaultCommand(new TeleopDriveCommand(
-        // () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue ?
-        // -.3 : .3,
-        // () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY,
-        // drivetrain,
-        // () -> true));
-
-        // // ParallelCommandGroup
-        // drivetrain.setAccelerationLimits(5, new Rotation2d());
-        // CommandScheduler.getInstance().schedule(NamedCommands.getCommand("runAutoL4"));
-
-        // Works
-        Command autoCommand = autoChooser.getSelected();
-        System.out.println(autoCommand.getName());// -> a
-        System.out.println(autoCommand.getClass());// -> class com.pathplanner.lib.commands.PathPlannerAuto
-        System.out.println(autoCommand.getInterruptionBehavior());// -> kCancelSelf
-        System.out.println(autoCommand.getRequirements());// -> []
-        autoCommand.schedule();
-        System.out.println(CommandScheduler.getInstance().isScheduled(autoCommand));// -> true
-
-        // Also Works
-        // Command autoCommand = new
-        // PathPlannerAuto(autoChooser.getSelected().getName());
-        // System.out.println(autoCommand.getName());// -> a
-        // System.out.println(autoCommand.getClass());// -> class
-        // com.pathplanner.lib.commands.PathPlannerAuto
-        // System.out.println(autoCommand.getInterruptionBehavior());// -> kCancelSelf
-        // System.out.println(autoCommand.getRequirements());// -> []
-        // autoCommand.schedule();// -> printed (command output)
-        // System.out.println(CommandScheduler.getInstance().isScheduled(autoCommand));//->
-        // true
+        autoChooser.getSelected().schedule();
     }
 
     @Override

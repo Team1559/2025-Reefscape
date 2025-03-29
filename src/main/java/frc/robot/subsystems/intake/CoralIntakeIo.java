@@ -1,10 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import java.util.prefs.BackingStoreException;
-
-import org.littletonrobotics.junction.Logger;
-import org.opencv.ml.StatModel;
-
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
