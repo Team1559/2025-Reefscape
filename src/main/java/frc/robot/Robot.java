@@ -278,24 +278,27 @@ public class Robot extends LoggedRobot {
     @Override
     public void autonomousInit() {
 
-        // PathPlannerPath path = PathPlannerPath.fromPathFile("Center to L4");
-        // Supplier<Pose2d> pose = drivetrain::getPosition;
-        // Supplier<ChassisSpeeds> speeds = drivetrain::getCurrentSpeed;
-        // BiConsumer<ChassisSpeeds, DriveFeedforwards> consumer = (x, y) -> drivetrain.driveRobotOriented(x);
-        // PathFollowingController controller = new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5));
-        // ModuleConfig moduleConfig = new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1)
-        // double swerveModuleX = Units.inchesToMeters(12);
-        // double swerveModuleY = Units.inchesToMeters(12);
-        // Translation2d[] locations = {new Translation2d(swerveModuleX, swerveModuleY), new Translation2d(swerveModuleX, -swerveModuleY), new Translation2d(-swerveModuleX, swerveModuleY), new Translation2d(-swerveModuleX, -swerveModuleY)};
-        // RobotConfig config = new RobotConfig(Units.lbsToKilograms(132), Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15), moduleConfig, locations);
+        //PathPlannerPath path = PathPlannerPath.fromPathFile("Center to L4");
+        //Supplier<Pose2d> poseSupplier = drivetrain::getPosition;
+        //Supplier<ChassisSpeeds> speedsSupplier = drivetrain::getCurrentSpeed;
+        //BiConsumer<ChassisSpeeds, DriveFeedforwards> output = (x, y) -> drivetrain.driveRobotOriented(x);
+        //PathFollowingController controller = new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5));
+        //ModuleConfig moduleConfig = new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1)
+        //double swerveModuleX = Units.inchesToMeters(12);
+        //double swerveModuleY = Units.inchesToMeters(12);
+        //Translation2d[] locations = {new Translation2d(swerveModuleX, swerveModuleY), new Translation2d(swerveModuleX, -swerveModuleY), new Translation2d(-swerveModuleX, swerveModuleY), new Translation2d(-swerveModuleX, -swerveModuleY)};
+        //RobotConfig robotConfig = new RobotConfig(Units.lbsToKilograms(132), Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15), moduleConfig, locations);
+        //BooleanSupplier shouldFlipPath = () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
 
-        // new FollowPathCommand(PathPlannerPath.fromPathFile("Center to L4"), drivetrain::getPosition,
+        //new FollowPathCommand(PathPlannerPath.fromPathFile("Center to L4"), drivetrain::getPosition,
         //         drivetrain::getCurrentSpeed, (x, y) -> drivetrain.driveRobotOriented(x),
         //         new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)),
         //         new RobotConfig(Units.lbsToKilograms(132),
         //                 Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15)),
         //                 new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1),
         //         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, drivetrain);
+        
+        //new FollowPathCommand(path, poseSupplier, speedsSupplier, output, controller, robotConfig, shouldFlipPath, drivetrain);
         autoChooser.getSelected().schedule();
     }
 
