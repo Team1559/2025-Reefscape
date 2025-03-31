@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
+
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -11,9 +14,23 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.controllers.PathFollowingController;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.DriveFeedforwards;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -26,6 +43,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.subsystems.Leds;
+import frc.lib.subsystems.swerve.SdsSwerveModuleIo;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
@@ -57,7 +75,6 @@ public class Robot extends LoggedRobot {
 
     private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .01;
 
-
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
@@ -79,7 +96,6 @@ public class Robot extends LoggedRobot {
         autoChooser.addOption("Pathplannerless Leave", autoDrive());
         autoChooser.addOption("Pathplannerless L4", autoL4());
         SmartDashboard.putData(autoChooser);
-    
 
         DriverStation.silenceJoystickConnectionWarning(true);
     }
@@ -166,11 +182,11 @@ public class Robot extends LoggedRobot {
     }
 
     public void setTeleopBindings() {
-        //Pilot modifier buttons
+        // Pilot modifier buttons
         Trigger robotOrientedMod = pilotController.leftTrigger();
         Trigger slowMod = pilotController.rightTrigger();
 
-        //Pilot controls
+        // Pilot controls
         drivetrain.setDefaultCommand(
                 new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                         () -> -nthKeepSign(pilotController.getLeftX(), 2),
@@ -186,7 +202,7 @@ public class Robot extends LoggedRobot {
                 drivetrain, robotOrientedMod));
         pilotController.rightBumper().whileTrue(climb());
 
-        //Copilot controls
+        // Copilot controls
         coPilotController.a().onTrue(coralAlignFeeder().alongWith(limitAccel(Level.FEEDER, slowMod.getAsBoolean())));
         coPilotController.b().onTrue(coralAlignL2().alongWith(limitAccel(Level.L2_CORAL, slowMod.getAsBoolean())));
         coPilotController.x().onTrue(coralAlignL3().alongWith(limitAccel(Level.L3_CORAL, slowMod.getAsBoolean())));
@@ -246,7 +262,7 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void robotInit() {
-        leds.setProgressSupplier(()->elevator.getHeight() / Level.L4_CORAL.height);
+        leds.setProgressSupplier(() -> elevator.getHeight() / Level.L4_CORAL.height);
     }
 
     @Override
@@ -258,8 +274,28 @@ public class Robot extends LoggedRobot {
     public void disabledInit() {
         CommandScheduler.getInstance().cancelAll();
     }
+
     @Override
     public void autonomousInit() {
+
+        // PathPlannerPath path = PathPlannerPath.fromPathFile("Center to L4");
+        // Supplier<Pose2d> pose = drivetrain::getPosition;
+        // Supplier<ChassisSpeeds> speeds = drivetrain::getCurrentSpeed;
+        // BiConsumer<ChassisSpeeds, DriveFeedforwards> consumer = (x, y) -> drivetrain.driveRobotOriented(x);
+        // PathFollowingController controller = new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5));
+        // ModuleConfig moduleConfig = new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1)
+        // double swerveModuleX = Units.inchesToMeters(12);
+        // double swerveModuleY = Units.inchesToMeters(12);
+        // Translation2d[] locations = {new Translation2d(swerveModuleX, swerveModuleY), new Translation2d(swerveModuleX, -swerveModuleY), new Translation2d(-swerveModuleX, swerveModuleY), new Translation2d(-swerveModuleX, -swerveModuleY)};
+        // RobotConfig config = new RobotConfig(Units.lbsToKilograms(132), Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15), moduleConfig, locations);
+
+        // new FollowPathCommand(PathPlannerPath.fromPathFile("Center to L4"), drivetrain::getPosition,
+        //         drivetrain::getCurrentSpeed, (x, y) -> drivetrain.driveRobotOriented(x),
+        //         new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)),
+        //         new RobotConfig(Units.lbsToKilograms(132),
+        //                 Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15)),
+        //                 new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1),
+        //         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, drivetrain);
         autoChooser.getSelected().schedule();
     }
 
