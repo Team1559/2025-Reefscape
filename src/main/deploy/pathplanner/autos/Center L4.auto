@@ -5,15 +5,22 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "parallel",
           "data": {
-            "pathName": "Center to L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "alignL4"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "Center to L4"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "alignL4"
+                }
+              }
+            ]
           }
         },
         {

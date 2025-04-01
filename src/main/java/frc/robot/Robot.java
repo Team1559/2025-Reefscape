@@ -4,9 +4,9 @@
 
 package frc.robot;
 
-import java.util.function.BiConsumer;
-import java.util.function.Supplier;
+import java.io.IOException;
 
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -15,22 +15,12 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.controllers.PathFollowingController;
 import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.DriveFeedforwards;
+import com.pathplanner.lib.util.FileVersionException;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -43,7 +33,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.subsystems.Leds;
-import frc.lib.subsystems.swerve.SdsSwerveModuleIo;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
 import frc.robot.commands.ElevatorHeightCommand2025;
@@ -98,6 +87,8 @@ public class Robot extends LoggedRobot {
         SmartDashboard.putData(autoChooser);
 
         DriverStation.silenceJoystickConnectionWarning(true);
+
+        
     }
 
     public void clearCommandBindings() {
@@ -277,28 +268,6 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void autonomousInit() {
-
-        //PathPlannerPath path = PathPlannerPath.fromPathFile("Center to L4");
-        //Supplier<Pose2d> poseSupplier = drivetrain::getPosition;
-        //Supplier<ChassisSpeeds> speedsSupplier = drivetrain::getCurrentSpeed;
-        //BiConsumer<ChassisSpeeds, DriveFeedforwards> output = (x, y) -> drivetrain.driveRobotOriented(x);
-        //PathFollowingController controller = new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5));
-        //ModuleConfig moduleConfig = new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1)
-        //double swerveModuleX = Units.inchesToMeters(12);
-        //double swerveModuleY = Units.inchesToMeters(12);
-        //Translation2d[] locations = {new Translation2d(swerveModuleX, swerveModuleY), new Translation2d(swerveModuleX, -swerveModuleY), new Translation2d(-swerveModuleX, swerveModuleY), new Translation2d(-swerveModuleX, -swerveModuleY)};
-        //RobotConfig robotConfig = new RobotConfig(Units.lbsToKilograms(132), Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15), moduleConfig, locations);
-        //BooleanSupplier shouldFlipPath = () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-
-        //new FollowPathCommand(PathPlannerPath.fromPathFile("Center to L4"), drivetrain::getPosition,
-        //         drivetrain::getCurrentSpeed, (x, y) -> drivetrain.driveRobotOriented(x),
-        //         new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)),
-        //         new RobotConfig(Units.lbsToKilograms(132),
-        //                 Units.lbsToKilograms(132) * Units.inchesToMeters(15) * Units.inchesToMeters(15)),
-        //                 new ModuleConfig(SdsSwerveModuleIo.WHEEL_RADIUS, 5, 1.0, DCMotor.getKrakenX60(1), 80.0, 1),
-        //         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red, drivetrain);
-        
-        //new FollowPathCommand(path, poseSupplier, speedsSupplier, output, controller, robotConfig, shouldFlipPath, drivetrain);
         autoChooser.getSelected().schedule();
     }
 
@@ -314,14 +283,6 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void teleopPeriodic() {
-    }
-
-    @Override
-    public void teleopExit() {
-    }
-
-    @Override
     public void testInit() {
         // FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
         // }, (b) -> {
@@ -329,14 +290,6 @@ public class Robot extends LoggedRobot {
         // CommandScheduler.getInstance().schedule(goToZero);
         clearCommandBindings();
         setTestBindings();
-    }
-
-    @Override
-    public void testPeriodic() {
-    }
-
-    @Override
-    public void testExit() {
     }
 
     private double nthKeepSign(double num, int n) {

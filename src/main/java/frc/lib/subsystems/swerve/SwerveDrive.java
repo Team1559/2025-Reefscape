@@ -75,9 +75,8 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
 
     public void configureAuto(RobotConfig robotConfig) {
         AutoBuilder.configure(this::getPosition, this::resetPose, this::getCurrentSpeed, this::driveRobotOriented,
-                new PPHolonomicDriveController(new PIDConstants(5), new PIDConstants(5)), robotConfig,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this);// TODO: output
+                new PPHolonomicDriveController(new PIDConstants(3), new PIDConstants(3)), robotConfig,
+                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red);// TODO: output
     }
 
     public void driveFieldOriented(ChassisSpeeds speeds) {
