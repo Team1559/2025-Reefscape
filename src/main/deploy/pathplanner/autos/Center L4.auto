@@ -5,28 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "parallel",
+          "type": "path",
           "data": {
-            "commands": [
-              {
-                "type": "path",
-                "data": {
-                  "pathName": "Center to L4"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "alignL4"
-                }
-              }
-            ]
+            "pathName": "Center to L4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "coralOutAuto"
+            "name": "print"
           }
         }
       ]
