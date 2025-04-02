@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center to L4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "print"
+            "pathName": "Center to L4 H"
           }
         }
       ]

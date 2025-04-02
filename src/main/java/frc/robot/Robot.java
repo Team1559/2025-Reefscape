@@ -21,6 +21,8 @@ import com.pathplanner.lib.util.FileVersionException;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -88,7 +90,8 @@ public class Robot extends LoggedRobot {
 
         DriverStation.silenceJoystickConnectionWarning(true);
 
-        
+        PowerDistribution pdh = new PowerDistribution(1, ModuleType.kRev);
+        pdh.setSwitchableChannel(true);
     }
 
     public void clearCommandBindings() {
@@ -99,6 +102,8 @@ public class Robot extends LoggedRobot {
         NamedCommands.registerCommand("print", new PrintCommand("printed"));
         NamedCommands.registerCommand("alignL4", coralAlignL4());
         NamedCommands.registerCommand("coralOutAuto", coralOutSlow());
+        NamedCommands.registerCommand("alignFeeder", coralAlignFeeder());
+        NamedCommands.registerCommand("coralIn", coralIn());
     }
 
     public Command limitAccel(Level level, boolean slow) {
