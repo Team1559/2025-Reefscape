@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 
 public class LimelightCameraIo extends VisionCameraIo {
     private static final double STDEV_MULTIPLIER = 1.5;
-    private static final double STDEV_DISTANCE_MULTIPLIER = 1.0;
+    private static final double STDEV_DISTANCE_MULTIPLIER = 2.0;
     private static final Rotation2d MEGATAG2_STDEV_YAW = Rotation2d.fromRadians(999999);
     private static final Rotation2d ROTATION2D_NAN = new Rotation2d(Double.NaN);
     private static final Pose2d POSE2D_NAN = new Pose2d(Double.NaN, Double.NaN, ROTATION2D_NAN);

@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import java.io.IOException;
-
-import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -14,12 +11,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.FollowPathCommand;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -27,7 +20,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
@@ -199,17 +191,24 @@ public class Robot extends LoggedRobot {
         pilotController.rightBumper().whileTrue(climb());
 
         // Copilot controls
-        coPilotController.a().onTrue(coralAlignFeeder().alongWith(limitAccel(Level.FEEDER, slowMod.getAsBoolean())));
+        coPilotController.a().onTrue(coralAlignFeeder().andThen(limitAccel(Level.FEEDER, slowMod.getAsBoolean())));
         coPilotController.b().onTrue(coralAlignL2().alongWith(limitAccel(Level.L2_CORAL, slowMod.getAsBoolean())));
         coPilotController.x().onTrue(coralAlignL3().alongWith(limitAccel(Level.L3_CORAL, slowMod.getAsBoolean())));
         coPilotController.y().onTrue(coralAlignL4().alongWith(limitAccel(Level.L4_CORAL, slowMod.getAsBoolean())));
 
         coPilotController.rightTrigger().whileTrue(coralIn());
-        coPilotController.rightBumper().whileTrue(coralOut());
+        coPilotController.rightBumper().whileTrue(coralOut()); 
+
+        System.out.print(DriverStation.getMatchTime() <= 20);
+
+        // Trigger endgame = new Trigger(() -> DriverStation.getMatchTime() <= 20); 
+        // endgame.onFalse(new InstantCommand(() -> leds.setProgressSupplier(() -> elevator.getHeight() / Level.L4_CORAL.height)));
+        // endgame.onTrue(new InstantCommand(() -> leds.setPattern(LEDPattern.rainbow(255, 255).scrollAtAbsoluteSpeed(InchesPerSecond.of(20), Inches.of(1)))));
     }
 
     public void setTestBindings() {
-        Trigger robotOrientedMod = pilotController.leftTrigger();
+        pilotController.a().onTrue(manualElevatorUp());
+        // Trigger robotOrientedMod = pilotController.leftTrigger();
         // coPilotController.a().onTrue(NamedCommands.getCommand("elevatorL1"));
         // coPilotController.b().and(coPilotController.rightTrigger().negate())
         // .onTrue(NamedCommands.getCommand("elevatorL2"));
@@ -278,11 +277,11 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopInit() {
-        FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
-        }, (b) -> {
-        }, elevator::isHome, elevator);
-        CommandScheduler.getInstance().schedule(goToZero);
-
+        // FunctionalCommand goToZero = new FunctionalCommand(elevator::goHome, () -> {
+        // }, (b) -> {
+        // }, elevator::isHome, elevator);
+        // CommandScheduler.getInstance().schedule(goToZero);
+        new InstantCommand(elevator::stop).schedule();
         clearCommandBindings();
         setTeleopBindings();
     }
