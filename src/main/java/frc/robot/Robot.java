@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+import org.opencv.core.Point;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -208,45 +209,8 @@ public class Robot extends LoggedRobot {
 
     public void setTestBindings() {
         pilotController.a().onTrue(manualElevatorUp());
-        // Trigger robotOrientedMod = pilotController.leftTrigger();
-        // coPilotController.a().onTrue(NamedCommands.getCommand("elevatorL1"));
-        // coPilotController.b().and(coPilotController.rightTrigger().negate())
-        // .onTrue(NamedCommands.getCommand("elevatorL2"));
-        // coPilotController.b().and(coPilotController.rightTrigger()).onTrue(NamedCommands.getCommand("algaeL2"));
-        // coPilotController.x().and(coPilotController.rightTrigger().negate())
-        // .onTrue(NamedCommands.getCommand(("elevatorL3")));
-        // coPilotController.x().and(coPilotController.rightTrigger())
-        // .onTrue(NamedCommands.getCommand("elevatorL4"));
 
-        // coPilotController.y().onTrue(NamedCommands.getCommand("elevatorL4"));
-        // coPilotController.start().onTrue(NamedCommands.getCommand("manualElevatorUp"));//
-        // .onTrue(elevatorHome);
-
-        // drivetrain.setDefaultCommand(
-        // new TeleopDriveCommand(() -> pilotController.getLeftY(),
-        // () -> pilotController.getLeftX(),
-        // () -> -pilotController.getRightX(), SWERVE_MAX_LINEAR_VELOCITY,
-        // SWERVE_MAX_ANGULAR_VELOCITY,
-        // () -> 1 / (elevator.getHeight()),
-        // drivetrain, robotOrientedMod));
-        // pilotController.leftBumper()
-        // .whileTrue(new TeleopDriveCommand(() ->
-        // -nthKeepSign(pilotController.getLeftY(), 2),
-        // () -> -nthKeepSign(pilotController.getLeftX(), 2),
-        // () -> -nthKeepSign(pilotController.getRightX(), 2),
-        // SWERVE_SLOW_LINEAR_VELOCITY,
-        // SWERVE_SLOW_ANGULAR_VELOCITY,
-        // drivetrain, robotOrientedMod));
-
-        // coPilotController.leftTrigger()
-        // .whileTrue(new StartEndCommand(() -> coralIntake.run(false), () ->
-        // coralIntake.stop(),
-        // coralIntake));
-        // coPilotController.leftBumper()
-        // .whileTrue(new StartEndCommand(() -> coralIntake.run(true), () ->
-        // coralIntake.stop(),
-        // coralIntake));
-
+        
         coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
                 CoralIntake.TargetAngle.BARGE));
         coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
