@@ -1,15 +1,12 @@
 package frc.robot.subsystems.climber;
 
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLimitSwitch;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-
-import com.revrobotics.spark.config.SparkFlexConfig;
 
 public class ClimberIo2025 extends ClimberIo {
     private static final double MOTOR_VOLTS = 6;

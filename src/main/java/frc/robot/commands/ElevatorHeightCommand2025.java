@@ -10,4 +10,8 @@ public class ElevatorHeightCommand2025 extends ElevatorHeightCommand {
     public ElevatorHeightCommand2025(Elevator elevator, Level targetLevel) {
         super(elevator, targetLevel.height, TOLERANCE);
     }
+
+    public ElevatorHeightCommand2025(Elevator elevator, double height){
+        super(elevator, height, TOLERANCE);
+    }
 }

@@ -82,10 +82,5 @@ public class TeleopDriveCommand extends Command {
             swerveDrive.driveFieldOriented(chassisSpeeds);
         }
     }
-
-    private double squareKeepSign(double x){
-        return x * Math.abs(x);
-    }
-
     //TODO: I (Kyle) plan on adding a builder here
 }

@@ -1,10 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import java.util.prefs.BackingStoreException;
-
-import org.littletonrobotics.junction.Logger;
-import org.opencv.ml.StatModel;
-
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -31,7 +26,7 @@ public class CoralIntakeIo extends IntakeIo {
     private static final double INTAKE_MOTOR_VOLTAGE = 4;
     private static final double SLOW_INTAKE_VOLTAGE = 1;
 
-    private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .9;// .9 -> fudge
+    private static final double MOMENT_OF_INERTIA = RADIUS_TO_COM * INTAKE_MASS * .7;// .9 -> fudge
 
     private static final double ANGLE_GEAR_RATIO = 25;
     private static final double MAX_ANGLE_MOTOR_RPM = 50 * ANGLE_GEAR_RATIO;

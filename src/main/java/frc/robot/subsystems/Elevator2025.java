@@ -3,7 +3,6 @@ package frc.robot.subsystems;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.math.util.Units;
 import frc.lib.subsystems.elevator.Elevator;
 
 public class Elevator2025 extends Elevator {
@@ -22,8 +21,6 @@ public class Elevator2025 extends Elevator {
         
         L2_ALGAE(.454),
         L3_ALGAE(.818);
-        // TODO: Fix values
-
         public final double height;
 
         Level(double heightOffset) {

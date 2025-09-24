@@ -26,7 +26,7 @@ public class ElevatorIo2025 extends ElevatorIo {
     private static final double GRAVITY_FEEDFORWARD = .324;
     private static final int NUM_STAGES = 2;
     private static final double ELEVATOR_DEADBAND = .001;
-    private static final double HOME_VOLTAGE = -12 * .01;
+    private static final double HOME_VOLTAGE = -12 * .04;
 
     private final SparkFlex motor;
     private final RelativeEncoder encoder;
