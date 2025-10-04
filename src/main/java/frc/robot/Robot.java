@@ -94,6 +94,7 @@ public class Robot extends LoggedRobot {
     public void registerNamedCommands() {
         NamedCommands.registerCommand("print", new PrintCommand("printed"));
         NamedCommands.registerCommand("alignL4", coralAlignL4());
+        NamedCommands.registerCommand("alignL3", coralAlignL3());
         NamedCommands.registerCommand("coralOutAuto", coralOutSlow());
         NamedCommands.registerCommand("alignFeeder", coralAlignFeeder());
         NamedCommands.registerCommand("coralIn", coralIn());
