@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.subsystems.DriverAssist;
 import frc.lib.subsystems.Leds;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
 import frc.robot.commands.CoralIntakeAngleCommand;
@@ -44,6 +45,7 @@ public class Robot extends LoggedRobot {
     private final SendableChooser<Command> autoChooser;
     private final CommandXboxController pilotController;
     private final CommandXboxController coPilotController;
+    private final DriverAssist driverAssist;
 
     private final SwerveDrive2025 drivetrain;
     private final Vision2025 vision;
@@ -64,9 +66,9 @@ public class Robot extends LoggedRobot {
         Logger.addDataReceiver(new NT4Publisher());
         Logger.start();
         Logger.recordOutput("hi/test", ":)"); // Leave as easter egg
-
         pilotController = new CommandXboxController(0);
         coPilotController = new CommandXboxController(1);
+        driverAssist = new DriverAssist("DriverAssist");
 
         elevator = new Elevator2025();
         drivetrain = new SwerveDrive2025();
@@ -208,9 +210,15 @@ public class Robot extends LoggedRobot {
     }
 
     public void setTestBindings() {
-        pilotController.a().onTrue(manualElevatorUp());
-
         
+        
+        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                CoralIntake.TargetAngle.BARGE));
+        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                CoralIntake.TargetAngle.L4_ANGLE));
+        coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
+                CoralIntake.TargetAngle.SOURCE_ANGLE));
+
         coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
                 CoralIntake.TargetAngle.BARGE));
         coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
