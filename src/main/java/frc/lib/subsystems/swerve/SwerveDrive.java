@@ -200,4 +200,17 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         // TODO: Just for testing :p
     }
 
+    public static class SwerveConstantsData{
+        private final double SWERVE_MAX_ANGULAR_ACCEL;
+        private final double SWERVE_MAX_ANGULAR_VELOCITY;
+        private final double SWERVE_MAX_LINEAR_ACCEL;
+        private final double SWERVE_MAX_LINEAR_VELOCITY;
+
+        public void SwerveConstantsData(double swerveMaxAngularVelocity, double swerveMaxAngularAccel, double swerveMaxLinerVelocity double swerveMaxLinearAccel){
+            this.SWERVE_MAX_ANGULAR_ACCEL = swerveMaxAngularAccel;
+            this.SWERVE_MAX_ANGULAR_VELOCITY = swerveMaxAngularVelocity;
+            this.SWERVE_MAX_LINEAR_ACCEL = swerveMaxLinearAccel;
+            this.SWERVE_MAX_LINEAR_VELOCITY = swerveMaxLinerVelocity;
+        }
+    }
 }
