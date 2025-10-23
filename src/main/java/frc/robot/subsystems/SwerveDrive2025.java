@@ -1,21 +1,14 @@
 package frc.robot.subsystems;
 
-import java.io.IOException;
-
-import org.json.simple.parser.ParseException;
-
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.path.PathPlannerPath;
-import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import frc.lib.components.gyro.GyroIo;
@@ -30,6 +23,13 @@ public class SwerveDrive2025 extends SwerveDrive {
         private static final double MASS = Units.lbsToKilograms(132);
         private static final double RADIUS = Units.inchesToMeters(15); // Give or take
         private static final double MOI = MASS * RADIUS * RADIUS;
+        private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
+        private static final double SWERVE_MAX_LINEAR_ACCEL = 3;
+        private static final double SWERVE_MAX_ANGULAR_VELOCITY = 18;
+    
+        private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .01;        
+        public static final SwerveConstraints swerveConstraints = new SwerveConstraints(SWERVE_MAX_ANGULAR_VELOCITY, SWERVE_MAX_ANGULAR_ACCEL, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_LINEAR_ACCEL);
+        public static final SwerveConstraints slowSwerveConstraints = new SwerveConstraints(SWERVE_MAX_ANGULAR_VELOCITY / 6, SWERVE_MAX_ANGULAR_ACCEL, SWERVE_MAX_LINEAR_VELOCITY / 6, SWERVE_MAX_LINEAR_ACCEL);        
 
         public SwerveDrive2025() {
                 super("SwerveDrive", createGyro(), createModules());
@@ -80,5 +80,4 @@ public class SwerveDrive2025 extends SwerveDrive {
                                 new Translation2d(-swerveModuleX, -swerveModuleY));
                 return new SwerveModuleIo[] { frontLeft, frontRight, rearLeft, rearRight };
         }
-
 }

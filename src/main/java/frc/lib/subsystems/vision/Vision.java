@@ -3,7 +3,6 @@ package frc.lib.subsystems.vision;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.subsystems.LoggableSubsystem;
 import frc.lib.subsystems.vision.VisionCameraIo.VisionInputs;
 

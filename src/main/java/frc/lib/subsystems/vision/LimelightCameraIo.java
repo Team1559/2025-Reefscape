@@ -2,12 +2,9 @@ package frc.lib.subsystems.vision;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class LimelightCameraIo extends VisionCameraIo {
     private static final double STDEV_MULTIPLIER = 1.5;

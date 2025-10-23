@@ -8,6 +8,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.subsystems.swerve.SwerveDrive.SwerveConstraints;
 
 public class TeleopDriveCommand extends Command {
     private static final double DEADBAND = .10;
@@ -24,21 +25,18 @@ public class TeleopDriveCommand extends Command {
     private final BooleanSupplier driveRobotOriented;
 
 
-    public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier, double maxLinearVelocity, double maxRotationalVelocity, DoubleSupplier speedScale, SwerveDrive swerve, BooleanSupplier driveRobotOriented){
-        this(() -> xSupplier.getAsDouble() * speedScale.getAsDouble(), () -> ySupplier.getAsDouble() * speedScale.getAsDouble(), () -> rSupplier.getAsDouble() * speedScale.getAsDouble(), maxLinearVelocity, maxRotationalVelocity, swerve, driveRobotOriented);
-    }
     public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier,
-            double maxLinearVelocity, double maxRotationalVelocity, SwerveDrive swerveDrive) {
-        this(xSupplier, ySupplier, rSupplier, maxLinearVelocity, maxRotationalVelocity, swerveDrive, () -> false);
+            SwerveConstraints swerveConstraints, SwerveDrive swerveDrive) {
+        this(xSupplier, ySupplier, rSupplier, swerveConstraints, swerveDrive, () -> false);
     }
 
     public TeleopDriveCommand(DoubleSupplier xSupplier, DoubleSupplier ySupplier, DoubleSupplier rSupplier,
-    double maxLinearVelocity, double maxRotationalVelocity, SwerveDrive swerveDrive, BooleanSupplier driveRobotOriented){
+    SwerveConstraints swerveConstraints, SwerveDrive swerveDrive, BooleanSupplier driveRobotOriented){
         this.xSupplier = xSupplier;
         this.ySupplier = ySupplier;
         this.rSupplier = rSupplier;
-        this.maxLinearVelocity = maxLinearVelocity;
-        this.maxRotationalVelocity = maxRotationalVelocity;
+        this.maxLinearVelocity = swerveConstraints.getMaxLinearVelocity();
+        this.maxRotationalVelocity = swerveConstraints.getMaxAngularVelocity();
 
         this.swerveDrive = swerveDrive;
 

@@ -8,12 +8,13 @@ import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import org.opencv.core.Point;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.commands.AutoSwerveAlignmentCommand;
 import frc.lib.subsystems.DriverAssist;
 import frc.lib.subsystems.Leds;
 import frc.lib.subsystems.swerve.TeleopDriveCommand;
@@ -53,13 +55,6 @@ public class Robot extends LoggedRobot {
     private final CoralIntake coralIntake;
     private final Climber2025 climber;
     private final Leds leds;
-
-    private static final double SWERVE_MAX_LINEAR_VELOCITY = 5.21;
-    private static final double SWERVE_MAX_ANGULAR_VELOCITY = 18;
-    private static final double SWERVE_SLOW_LINEAR_VELOCITY = SWERVE_MAX_LINEAR_VELOCITY / 6;
-    private static final double SWERVE_SLOW_ANGULAR_VELOCITY = SWERVE_MAX_ANGULAR_VELOCITY / 6;
-
-    private static final double SWERVE_MAX_ANGULAR_ACCEL = SWERVE_MAX_ANGULAR_VELOCITY / .01;
 
     public Robot() {
         Logger.addDataReceiver(new WPILOGWriter());
@@ -104,7 +99,7 @@ public class Robot extends LoggedRobot {
     public Command limitAccel(Level level, boolean slow) {
         return new InstantCommand(() -> drivetrain.setAccelerationLimits(
                 50 * (slow ? 2 : 1) * (1 - (level.height / Level.L4_CORAL.height) * .25),
-                Rotation2d.fromRadians(SWERVE_MAX_ANGULAR_ACCEL)));
+                Rotation2d.fromRadians(SwerveDrive2025.swerveConstraints.getMaxAngularAccel()))); // SWERVE_MAX_ANGULAR_ACCEL
     }
 
     public Command elevatorTo(Level level) {
@@ -163,7 +158,7 @@ public class Robot extends LoggedRobot {
     public Command autoDrive() {
         return new TeleopDriveCommand(
                 () -> .25,
-                () -> 0, () -> 0, SWERVE_MAX_LINEAR_VELOCITY, SWERVE_MAX_ANGULAR_VELOCITY, drivetrain,
+                () -> 0, () -> 0, SwerveDrive2025.swerveConstraints, drivetrain,
                 () -> true).finallyDo((x) -> drivetrain.stopDriving());
     }
 
@@ -182,14 +177,12 @@ public class Robot extends LoggedRobot {
                 new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                         () -> -nthKeepSign(pilotController.getLeftX(), 2),
                         () -> -nthKeepSign(pilotController.getRightX(), 2),
-                        SWERVE_MAX_LINEAR_VELOCITY,
-                        SWERVE_MAX_ANGULAR_VELOCITY,
+                        SwerveDrive2025.swerveConstraints,
                         drivetrain, robotOrientedMod));
         slowMod.whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
                 () -> -nthKeepSign(pilotController.getLeftX(), 2),
                 () -> -nthKeepSign(pilotController.getRightX(), 2),
-                SWERVE_SLOW_LINEAR_VELOCITY,
-                SWERVE_SLOW_ANGULAR_VELOCITY,
+                SwerveDrive2025.slowSwerveConstraints,
                 drivetrain, robotOrientedMod));
         pilotController.rightBumper().whileTrue(climb());
 
@@ -200,31 +193,36 @@ public class Robot extends LoggedRobot {
         coPilotController.y().onTrue(coralAlignL4().alongWith(limitAccel(Level.L4_CORAL, slowMod.getAsBoolean())));
 
         coPilotController.rightTrigger().whileTrue(coralIn());
-        coPilotController.rightBumper().whileTrue(coralOut()); 
+        coPilotController.rightBumper().whileTrue(coralOut());
 
-        System.out.print(DriverStation.getMatchTime() <= 20);
-
-        // Trigger endgame = new Trigger(() -> DriverStation.getMatchTime() <= 20); 
-        // endgame.onFalse(new InstantCommand(() -> leds.setProgressSupplier(() -> elevator.getHeight() / Level.L4_CORAL.height)));
-        // endgame.onTrue(new InstantCommand(() -> leds.setPattern(LEDPattern.rainbow(255, 255).scrollAtAbsoluteSpeed(InchesPerSecond.of(20), Inches.of(1)))));
+        // Trigger endgame = new Trigger(() -> DriverStation.getMatchTime() <= 20);
+        // endgame.onFalse(new InstantCommand(() -> leds.setProgressSupplier(() ->
+        // elevator.getHeight() / Level.L4_CORAL.height)));
+        // endgame.onTrue(new InstantCommand(() ->
+        // leds.setPattern(LEDPattern.rainbow(255,
+        // 255).scrollAtAbsoluteSpeed(InchesPerSecond.of(20), Inches.of(1)))));
     }
 
     public void setTestBindings() {
-        
-        
-        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.BARGE));
-        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.L4_ANGLE));
-        coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.SOURCE_ANGLE));
+        Trigger robotOrientedMod = pilotController.leftTrigger();
+        Trigger slowMod = pilotController.rightTrigger();
+        drivetrain.setDefaultCommand(
+                new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                        () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                        () -> -nthKeepSign(pilotController.getRightX(), 2),
+                        SwerveDrive2025.swerveConstraints,
+                        drivetrain, robotOrientedMod));
+        slowMod.whileTrue(new TeleopDriveCommand(() -> -nthKeepSign(pilotController.getLeftY(), 2),
+                () -> -nthKeepSign(pilotController.getLeftX(), 2),
+                () -> -nthKeepSign(pilotController.getRightX(), 2),
+                SwerveDrive2025.slowSwerveConstraints,
+                drivetrain, robotOrientedMod));
 
-        coPilotController.povLeft().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.BARGE));
-        coPilotController.povRight().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.L4_ANGLE));
-        coPilotController.povUp().onTrue(new CoralIntakeAngleCommand(coralIntake,
-                CoralIntake.TargetAngle.SOURCE_ANGLE));
+        pilotController.a()
+                .onTrue(new AutoSwerveAlignmentCommand(drivetrain, SwerveDrive2025.swerveConstraints, driverAssist,
+                        new Pose2d(5.83, 4.15, Rotation2d.fromDegrees(-180)),
+                        new Translation2d(0.5, Rotation2d.fromDegrees(-180))));
+        // pilotController.a().onTrue(new PrintCommand("Whoopee"));
     }
 
     @Override

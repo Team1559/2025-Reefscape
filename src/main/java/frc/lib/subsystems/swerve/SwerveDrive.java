@@ -1,20 +1,13 @@
 package frc.lib.subsystems.swerve;
 
-import java.lang.annotation.ElementType;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.Logger;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +18,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -200,17 +192,36 @@ public class SwerveDrive extends LoggableSubsystem implements VisionConsumer {
         // TODO: Just for testing :p
     }
 
-    public static class SwerveConstantsData{
-        private final double SWERVE_MAX_ANGULAR_ACCEL;
-        private final double SWERVE_MAX_ANGULAR_VELOCITY;
-        private final double SWERVE_MAX_LINEAR_ACCEL;
-        private final double SWERVE_MAX_LINEAR_VELOCITY;
+    public static class SwerveConstraints{
+        private final double maxAngularAccel;
+        private final double maxAngularVelocity;
+        private final double maxLinearAccel;
+        private final double maxLinearVelocity;
 
-        public void SwerveConstantsData(double swerveMaxAngularVelocity, double swerveMaxAngularAccel, double swerveMaxLinerVelocity double swerveMaxLinearAccel){
-            this.SWERVE_MAX_ANGULAR_ACCEL = swerveMaxAngularAccel;
-            this.SWERVE_MAX_ANGULAR_VELOCITY = swerveMaxAngularVelocity;
-            this.SWERVE_MAX_LINEAR_ACCEL = swerveMaxLinearAccel;
-            this.SWERVE_MAX_LINEAR_VELOCITY = swerveMaxLinerVelocity;
+        public SwerveConstraints(double swerveMaxAngularVelocity, double swerveMaxAngularAccel, double swerveMaxLinerVelocity, double swerveMaxLinearAccel){
+            this.maxAngularAccel = swerveMaxAngularAccel;
+            this.maxAngularVelocity = swerveMaxAngularVelocity;
+            this.maxLinearAccel = swerveMaxLinearAccel;
+            this.maxLinearVelocity = swerveMaxLinerVelocity;
+
+
         }
+
+        public double getMaxAngularAccel(){
+            return maxAngularAccel;
+        }
+
+        public double getMaxAngularVelocity(){
+            return maxAngularVelocity;
+        }
+
+        public double getMaxLinerAccel(){
+            return maxLinearAccel;
+        }
+
+        public double getMaxLinearVelocity(){
+            return maxLinearVelocity;
+        }
+
     }
 }
