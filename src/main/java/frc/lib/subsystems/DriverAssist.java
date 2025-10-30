@@ -10,8 +10,8 @@ public class DriverAssist extends LoggableSubsystem{
         super(name);
     }
 
-    public Command configure(Command command){
-        return command.beforeStarting(this::cancel, this);
+    public void configure(Command command){
+        command.addRequirements(this);
     }
 
     public void cancel(){

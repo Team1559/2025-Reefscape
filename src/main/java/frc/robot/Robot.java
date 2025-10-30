@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import java.io.IOException;
+
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -11,6 +14,8 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -221,8 +226,19 @@ public class Robot extends LoggedRobot {
         pilotController.a()
                 .onTrue(new AutoSwerveAlignmentCommand(drivetrain, SwerveDrive2025.swerveConstraints, driverAssist,
                         new Pose2d(5.83, 4.15, Rotation2d.fromDegrees(-180)),
-                        new Translation2d(0.5, Rotation2d.fromDegrees(-180))));
-        // pilotController.a().onTrue(new PrintCommand("Whoopee"));
+                        Rotation2d.fromDegrees(-180)));
+        try {
+            pilotController.b().onTrue(AutoBuilder.followPath(PathPlannerPath.fromPathFile("Center L4 1")));
+        } catch (FileVersionException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override
